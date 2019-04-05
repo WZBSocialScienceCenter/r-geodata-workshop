@@ -1,0 +1,131 @@
+/* logo */
+
+
+@media print {
+  body {
+    font-family: helvetica, sans-serif !important;
+  }
+  
+  em {
+    font-family: helvetica, sans-serif !important;
+    font-style: normal !important;
+  }
+}
+
+.gdbar img {
+  width: 200px !important;
+  height: 100px !important;
+  margin: 0 !important;
+}
+
+.gdbar {
+  width: 216px !important;
+  height: 116px !important;
+}
+
+slides > slide:not(.nobackground):before {
+  width: 100px;
+  height: 50px;
+  background-size: 100px 50px;
+}
+
+slides > slide > hgroup + article {
+  margin-top: 20px;
+}
+
+article.even-smaller {
+  font-size: 16px;
+}
+
+article.even-smaller pre {
+  font-size: 16px;
+  line-height: 16px;
+  margin: 2px;
+  padding: 2px;
+}
+
+slide.current {
+  color: #515151;
+}
+
+small {
+  font-size: 0.7em;
+}
+
+pre {
+  margin-bottom: 0;
+}
+
+.prettyprint {
+  background-color: rgba(200, 200, 200, 0.5);
+  margin-bottom: 0;
+}
+
+.floatright {
+  float: right;
+  padding-left: 1em;
+}
+
+.clearfloat {
+  clear: both;
+}
+
+img.standalone {
+  max-width:80%;
+  margin:auto;
+  display:block;
+}
+
+.fig, .fullfig, .halffig {
+  width: 100%;
+  text-align: center;
+}
+
+.fig img {
+  max-width: 100%;
+}
+
+.fullfig img {
+  max-width:100%;
+  /*max-height:66%;*/
+  display:block;
+  margin:auto;
+}
+
+.halffig img {
+  max-width: 100%;
+  max-height: 44%;
+}
+
+blockquote {
+  border-left: 3px solid #818181;;
+  color: #818181;
+  padding-left: 1em;
+}
+
+article .warning {
+  background: #FFBBBB;
+  padding: 5px;
+}
+
+table.small caption {
+  font-size: 80%;
+  padding: 5px;
+}
+
+table.small th {
+  background: lightgray;
+  padding: 2px 3px 2px 3px;
+}
+
+table.small td {
+  border: 1px solid lightgray;
+  border-collapse: collapse;
+  padding: 2px 3px 2px 3px;
+}
+
+table.small.left {
+  float: left;
+  margin-right: 30px;
+}
+
