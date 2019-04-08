@@ -7,3 +7,8 @@ city_coords <- data.frame(city = c('Hayyal al Q.', 'Saltillo', 'Berlin', 'Usak',
                           lng = c(31.910341, 1, 1, 1, 1, 1, 1, 1, 1),
                           lat = c(35.948458, 1, 1, 1, 1, 1, 1, 1, 1),
                           stringsAsFactors = FALSE)
+                          
+                          
+https://lab.technologiestiftung-berlin.de/projects/spatial-units/index.html
+https://data.technologiestiftung-berlin.de/dataset/lor_planungsgraeume
+https://geocompr.robinlovelace.net/
