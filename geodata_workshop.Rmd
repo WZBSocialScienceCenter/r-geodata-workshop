@@ -241,12 +241,13 @@ ggplot(some_cities) +                                  # pass the cities data to
 
 Make a script that:
 
-1. Loads the CSV file `wzb_partners.csv`
-2. Loads the data for the world map
-3. Removes the shape (i.e. the "feature") for Antarctica from the world map data
-4. Makes a plot, showing the partner institutions with a dot and a label
+1. Load the CSV file `wzb_partners_data.csv`
+2. Load the data for the world map
+3. Remove the shape (i.e. the "feature") for Antarctica from the world map data
+4. Make a plot, showing the partner institutions with a dot on the world map (optional: make the color dependent on the "type" column)
+5. Optional: Group institutions by city and count institutions per city; show the city locations in Europe only as a dot, make the dot size dependent on number of institutions
 
-See further hints on handout.
+**See further hints on handout.**
 
 # Sources and file formats for geographic data
 
