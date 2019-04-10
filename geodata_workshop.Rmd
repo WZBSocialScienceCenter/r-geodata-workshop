@@ -11,6 +11,7 @@ output:
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(R.options = list(max.print = 50))
+set.seed(10042019)
 ```
 
 ## Today's schedule
@@ -24,7 +25,7 @@ TODO: nachträglich anpassen
 
 -- lunch break --
 
-2. A short introduction to data linkage with *dplyr* 
+2. A short introduction to data linkage with *dplyr*
 5. Combining data and making a *choropleth map*
 6. Geo-coding and reverse geo-coding via Google Maps API
 7. Coordinate reference systems and projections
@@ -127,15 +128,15 @@ ggplot() + geom_sf(data = worldmap_data) + geom_sf(data = nyc, color = 'red', si
     theme_bw()
 ```
 
-- points can be connected to form other geometric shapes such as *lines* or *polygons*
+- points can be connected to form other geometrical shapes such as *lines* or *polygons*
 - points and shapes can represent numerous geographic entities: cities, buildings, countries, rivers, lakes, etc.
 
 
 ## Packages, packages, packages {.build}
 
-We need to extend R in order to work with geographic data in R by installing these packages:
+We need to extend R in order to work with geographic data *(geo-data)* in R by installing these packages:
 
-- *maps*: contains geographic data for national borders and administrative regions for several countries
+- *maps*: contains geo-data for national borders and administrative regions for several countries
 - *rgeos* and *maptools*: Misc. functions for operations on geometries
 - *sf*: *"Simple Features for R"* -- reading, writing and transforming spatial data
 
@@ -148,7 +149,7 @@ install.packages(c('maps', 'maptools', 'sf', 'rgeos'))
 
 ## Simple features {.build .smaller}
 
-Most packages for working with geographic data in R rely on the *Simple Features* standard (most prominently the `sf` package).
+Most packages for working with geo-data in R rely on the *Simple Features* standard (most prominently the `sf` package).
 
 *Simple features* describe how objects in the real world can be represented in computers in terms of their *spatial geometry*:
 
@@ -237,6 +238,8 @@ ggplot(some_cities) +                                  # pass the cities data to
 
 ## Excercise 1 {.smaller}
 
+TODO: Anpassen / 2 mgl. Übungen?
+
 **Visualizing WZB partner institutions on a world map**
 
 Make a script that:
@@ -249,18 +252,111 @@ Make a script that:
 
 **See further hints on handout.**
 
-# Sources and file formats for geographic data
+# Sources and file formats for geo-data
 
-## File formats
+## Administrative levels and identifiers {.smaller .build}
 
-There are numerous 
+Suppose you have observations that refer to geographic locations, e.g. countries, cities, neighborhoods. You may want to:
 
-- 
-- good news: `sf` can handle all popular file formats
+- **link** that data with existing information on that geographic entity e.g. country GDP, city population, poverty rate in the neighboorhood
+- **visualize** that data geographically
 
-## sources
+For both things you need to:
 
-- R packages (*maps*)
+1. agree on **geographic (administrative) level** for matching (e.g. country, state, municipality)
+2. find **identifiers** to match the observations w/ respective geographic entities
+
+TODO: schematische darstellung
+
+## Country names, country codes {.smaller .build}
+
+- different names may refer to the same country (e.g. Germany / Federal Republic of Germany, BRD, etc.) &rarr; often not a good identifier
+- ISO 3166-1 designates every country a two- or three-letter code (e.g. DE / DEU)
+- often used in datasets (e.g. from the UN)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(rnaturalearth)
+library(ggrepel)
+library(dplyr)
+
+world <- ne_countries(type = 'map_units', returnclass = 'sf', continent = 'europe')
+world <- st_transform(world, 3035)
+world <- st_crop(world, xmin = 0, xmax = 7e6, ymin = 0, ymax = 5e6)
+
+labelsdf <- data.frame(label = sprintf('%s (%s)\nISO Codes: %s / %s',
+                                       world$name, world$formal_en, world$iso_a2, world$iso_a3), stringsAsFactors = FALSE)
+#labelsdf$geometry <- st_centroid(world$geometry)
+labels_coords <- as.data.frame(st_coordinates(st_centroid(world$geometry)))
+labelsdf$x <- labels_coords$X
+labelsdf$y <- labels_coords$Y
+world$show_label <- sample(c(TRUE, FALSE), nrow(labelsdf), replace = TRUE, prob = c(0.3, 0.7))
+labelsdf <- labelsdf[world$show_label, ]
+
+ggplot() + geom_sf(aes(fill = show_label), data = world) +
+    geom_label_repel(aes(label = label, x = x, y = y), data = labelsdf, size = 3, min.segment.length = 0, alpha = 0.85) +
+    scale_fill_brewer(palette = 'Blues', guide = "none") +
+    ggtitle('A random sample of European countries with their ISO codes') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
+
+
+## Finding NUTS in the EU {.smaller .build}
+
+https://en.wikipedia.org/wiki/Nomenclature_of_Territorial_Units_for_Statistics
+
+also Turkey, Iceland, Norway, Switzerland, ...
+
+plot: NUTS codes
+
+## AGS in Germany
+
+"Amtlicher Gemeindeschlüssel" (AGS ~ "municipality identificator")
+
+plot
+
+## Berlin: LOR codes
+
+hierarchical spaces reaching from 60 larger areas to fine-grained 447 neighborhoods in Berlin
+
+plot
+
+
+## What if I have no geo-identifier?
+
+If your observations don't contain the identifiers you need, you can still do the following as long as you have **some information suitable for geo-coding**¹ (e.g. address, city name, institution name):
+
+1. find out the longitude/latitude coordinate for each observation
+2. match each coordinate to its surrounding geographic entity (i.e. a municipality) by doing a "point-within-polygon" test²
+
+TODO: plot dots within regions
+
+<small>¹ we will have a look at geo-coding later</small>
+<small>² make sure that both use the same coordinate reference system -- see last unit in this workshop</small>
+
+## Sources for geo-data
+
+Have look in the handout document, where geo-data sources at world- and EU-level (NUTS) as well as sources for Germany (AGS) and Berlin (LOR) are presented.
+
+## File formats {.smaller .build}
+
+There are numerous file formats that store data for *geographic information system (GIS)* software. The most popular include:
+
+- ESRI shapefile ("SHP"):
+    - consists of at least three files in the same directory with filename extensions `.shp`, `.shx` and `.dbf`
+- GeoJSON (`.geojson`, `.json`) and TopoJSON (`.topojson`, `.json`)
+- KML (`.kml`, `.kmz`): Keyhole Markup Language, used by Google Earth
+- GML (`.gml`): Geography Markup Language
+- AutoCAD DXF (`.dxf`)
+
+You may also encounter other formats such as vector data files (`.svg`, `.poly`) or databases (`.sql`, `.sqlite`).
+
+Good news: `sf` can handle all popular file formats.
+
+
+## QGIS as a geographic information system
 
 
 # A short introduction to data linkage with *dplyr*
@@ -374,6 +470,7 @@ ggplot() + geom_sf(data = norway)
 ## Further reading
 
 - sf vignette
+- https://cran.r-project.org/web/views/Spatial.html
 - https://geocompr.robinlovelace.net/
 - ggplot2
 
