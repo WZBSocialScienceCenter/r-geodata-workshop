@@ -54,9 +54,9 @@ You can either download the data directly from the website or use the package [r
 
 [OSM Admin Boundaries Map](https://wambachers-osm.website/boundaries/): web-service to download administrative boundaries worldwide for different levels in different formats (shapefile, GeoJSON, etc.); contains meta-data (depending on country) such as AGS in Germany
 
-<div class="fullfig">
-  <img src="figures/osm-boundaries.png" alt="OSM Admin Boundaries screenshot" style="max-height:50%">
-</div>
+[This wiki article](https://wiki.openstreetmap.org/wiki/DE:Grenze#Gemeinden_.E2.80.93_admin_level.3D7.E2.80.938) explains which OpenStreetMap administrative boundary levels correspond to which regional level in Germany (e.g. level 6 corresponds to "Kreise").
+
+![OSM Admin Boundaries screenshot](figures/osm-boundaries.png)
 
 
 ## Administrative authorities in the EU

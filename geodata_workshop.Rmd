@@ -41,6 +41,10 @@ TODO
 
 TODO
 
+full flexibility
+
+but even things that look simple are actually quite complex
+
 # A short introduction to plotting with *ggplot2*
 
 ## Plotting with *ggplot2* {.build .smaller}
@@ -222,7 +226,7 @@ ggplot(some_cities) +                                # pass the cities data to p
 ```
 
 
-## Adding labels next to the points {.smaller}
+## Adding labels next to the points {.smaller .build}
 
 You may also add text labels for the cities. *ggplot2* provides `geom_text` and `geom_label` (draws box around text):
 
@@ -289,13 +293,14 @@ labelsdf <- data.frame(label = sprintf('%s (%s)\nISO Codes: %s / %s',
 labels_coords <- as.data.frame(st_coordinates(st_centroid(world$geometry)))
 labelsdf$x <- labels_coords$X
 labelsdf$y <- labels_coords$Y
-world$show_label <- sample(c(TRUE, FALSE), nrow(labelsdf), replace = TRUE, prob = c(0.3, 0.7))
+world$show_label <- sample(c(TRUE, FALSE), nrow(labelsdf), replace = TRUE, prob = c(0.2, 0.8))
 labelsdf <- labelsdf[world$show_label, ]
 
 ggplot() + geom_sf(aes(fill = show_label), data = world) +
     geom_label_repel(aes(label = label, x = x, y = y), data = labelsdf, size = 3, min.segment.length = 0, alpha = 0.85) +
-    scale_fill_brewer(palette = 'Blues', guide = "none") +
-    ggtitle('A random sample of European countries with their ISO codes') +
+    scale_fill_brewer(guide = "none", palette = 'Dark2') +
+    labs(title = 'Random sample of European countries w/ ISO codes',
+            caption = 'source: Natural Earth Data') +
     theme_bw() +
     theme(axis.text = element_blank(),
           axis.title = element_blank(),
@@ -305,36 +310,147 @@ ggplot() + geom_sf(aes(fill = show_label), data = world) +
 
 ## Finding NUTS in the EU {.smaller .build}
 
-https://en.wikipedia.org/wiki/Nomenclature_of_Territorial_Units_for_Statistics
+The *Nomenclature of Territorial Units for Statistics (NUTS)* divides the EU territory into regions at 3 different levels for socio-economic analyses of the regions.
 
-also Turkey, Iceland, Norway, Switzerland, ...
+Candidate countries and countries inside EFTA also have NUTS regions (Norway, Switzerland, Albania, Turkey, etc.).
 
-plot: NUTS codes
+<div class="fullfig">
+  <img src="figures/eurostat-nuts-overview.jpg" alt="NUTS levels" style="max-height:50%"><br>
+  <small>source: [Eurostat](https://ec.europa.eu/eurostat/web/nuts/background)</small>
+</div>
 
-## AGS in Germany
+## Finding NUTS in the EU {.smaller}
 
-"Amtlicher Gemeindeschlüssel" (AGS ~ "municipality identificator")
+```{r, echo=FALSE, warning=FALSE}
+nutsrg2 <- read_sf('excercises/data/nutsrg_2.json')
+st_crs(nutsrg2) <- 3857
 
-plot
+labelsdf <- data.frame(label = sprintf('%s: %s', nutsrg2$id, nutsrg2$na), stringsAsFactors = FALSE)
+labels_coords <- as.data.frame(st_coordinates(st_centroid(nutsrg2$geometry)))
+labelsdf <- bind_cols(labelsdf, labels_coords)
+nutsrg2$show_label <- rep(FALSE, nrow(nutsrg2))
+nutsrg2$show_label[sample(1:nrow(nutsrg2), 3)] <- TRUE
+labelsdf <- labelsdf[nutsrg2$show_label, ]
 
-## Berlin: LOR codes
+ggplot() + geom_sf(aes(fill = show_label), data = nutsrg2) +
+    geom_label_repel(aes(label = label, x = X, y = Y), data = labelsdf, size = 3, min.segment.length = 0, alpha = 0.85) +
+    scale_fill_brewer(guide = "none", palette = 'Dark2') +
+    labs(title = 'Random sample of NUTS level 2 regions',
+         caption = 'source: Eurostat / https://github.com/eurostat/Nuts2json') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
 
-hierarchical spaces reaching from 60 larger areas to fine-grained 447 neighborhoods in Berlin
+## AGS in Germany {.smaller .build}
 
-plot
+In Germany, regions are hierarchically structured and identified by *"Amtlicher Gemeindeschlüssel" (AGS ~ "municipality identificator")*. The [*Gemeindeverzeichnis*](https://www.destatis.de/DE/Themen/Laender-Regionen/Regionales/_inhalt.html) contains all regions with their name, AGS, area, population and other features.
 
 
-## What if I have no geo-identifier?
+```{r, echo=FALSE, warning=FALSE}
+library(jsonlite)
 
-If your observations don't contain the identifiers you need, you can still do the following as long as you have **some information suitable for geo-coding**¹ (e.g. address, city name, institution name):
+ger_al6 <- read_sf('excercises/data/Germany_AL6.GeoJson')
+ger_al6$ags <- sapply(ger_al6$alltags, function(tags) {
+    ags <- fromJSON(tags)[['de:amtlicher_gemeindeschluessel']]
+    if (is.null(ags)) {
+        NA
+    } else {
+        ags
+    }
+}, USE.NAMES = FALSE)
+
+ger_al6 <- select(ger_al6, localname, ags, geometry)
+ger_al6 <- st_transform(ger_al6, 5243)
+
+labelsdf <- data.frame(label = sprintf('%s: %s', ger_al6$ags, ger_al6$localname), stringsAsFactors = FALSE)
+labels_coords <- as.data.frame(st_coordinates(st_centroid(ger_al6$geometry)))
+labelsdf <- bind_cols(labelsdf, labels_coords)
+ger_al6$show_label <- rep(FALSE, nrow(ger_al6))
+ger_al6$show_label[sample(1:nrow(ger_al6), 5)] <- TRUE
+labelsdf <- labelsdf[ger_al6$show_label, ]
+
+ggplot() + geom_sf(aes(fill = show_label), data = ger_al6) +
+    geom_label_repel(aes(label = label, x = X, y = Y), data = labelsdf, size = 3, min.segment.length = 0, alpha = 0.85) +
+    scale_fill_brewer(guide = "none", palette = 'Dark2') +
+    labs(title = 'Random sample of AGS at\nadministrative level 6 ("Kreise")',
+         caption = 'source: OpenStreetMap') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
+
+
+## Berlin: LOR codes {.smaller .build}
+
+Since 2006, Berlin uses *"Lebensweltlich orientierte Räume" (LOR)* to structure the city area into sub-regions at different levels, each of them identified by "LOR" code.
+
+1. *Prognoseräume* (60 regions)
+2. *Bezirksregionen* (138 regions)
+3. *Planungsräume* (447 regions)
+
+
+```{r, echo=FALSE, warning=FALSE}
+bln_plan <- read_sf('excercises/data/Planungsraum_EPSG_25833.shp')
+bln_plan$PLR_NAME <- iconv(bln_plan$PLR_NAME, from = 'LATIN1', to = 'UTF-8')
+st_crs(bln_plan) <- 25833
+
+labelsdf <- data.frame(label = sprintf('%s: %s', bln_plan$SCHLUESSEL, bln_plan$PLR_NAME), stringsAsFactors = FALSE)
+labels_coords <- as.data.frame(st_coordinates(st_centroid(bln_plan$geometry)))
+labelsdf <- bind_cols(labelsdf, labels_coords)
+bln_plan$show_label <- rep(FALSE, nrow(bln_plan))
+bln_plan$show_label[sample(1:nrow(bln_plan), 5)] <- TRUE
+labelsdf <- labelsdf[bln_plan$show_label, ]
+
+ggplot() + geom_sf(aes(fill = show_label), data = bln_plan) +
+    geom_label_repel(aes(label = label, x = X, y = Y), data = labelsdf, size = 3, min.segment.length = 0, alpha = 0.85) +
+    scale_fill_brewer(guide = "none", palette = 'Dark2') +
+    labs(title = 'Random sample of LOR regions at\n"Planungsraum" level in Berlin',
+         caption = 'source: Berlin Senate Department for Urban Development and Housing') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
+
+
+## What if I have no geo-identifier? {.smaller}
+
+If your observations don't contain the identifiers you need, you can still do the following as long as you have **some information suitable for geo-coding** (e.g. address, city name, institution name to convert to a geo-coordinate):
 
 1. find out the longitude/latitude coordinate for each observation
-2. match each coordinate to its surrounding geographic entity (i.e. a municipality) by doing a "point-within-polygon" test²
+2. match each coordinate to its surrounding geographic entity (i.e. a municipality) by doing a "point-within-polygon" test
 
-TODO: plot dots within regions
+```{r, echo=FALSE, warning=FALSE, fig.height=4, fig.align='center'}
+wzb_lon_lat <- c(13.365097, 52.506459)
+pt_wzb_df <- data.frame(label = 'WZB')
+pt_wzb_df$geometry <- st_transform(st_sfc(st_point(wzb_lon_lat), crs = 4326), 25833)
 
+bln_plan$contains_wzb <- as.logical(st_contains(bln_plan$geometry, pt_wzb_df$geometry))
+bln_plan$contains_wzb[is.na(bln_plan$contains_wzb)] <- FALSE
+
+wzb_lor_region <- bln_plan[bln_plan$contains_wzb, c('SCHLUESSEL', 'PLR_NAME')]
+
+ggplot() + geom_sf(aes(fill = contains_wzb), data = bln_plan) +
+    geom_sf(data = pt_wzb_df$geometry, color = 'white', size = 3) +
+    geom_sf_label(aes(label = label), data = pt_wzb_df, size = 3, alpha = 0.85, nudge_x = 100, nudge_y = -100, hjust = 0, vjust = 1) +
+    scale_fill_brewer(guide = "none", palette = 'Dark2') +
+    coord_sf(xlim = c(381e3, 399e3), ylim = c(5813e3, 5827e3), expand = FALSE) +
+    labs(title = sprintf('LOR region for WZB: %s\n(LOR code %s)', wzb_lor_region$PLR_NAME, wzb_lor_region$SCHLUESSEL),
+         subtitle = sprintf('Found for WZB geo-coordinates %.4f, %.4f', wzb_lon_lat[1], wzb_lon_lat[2]),
+         caption = 'source: Berlin Sen. Dept. for Urban Dev. and Housing') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
+
+<!--
 <small>¹ we will have a look at geo-coding later</small>
 <small>² make sure that both use the same coordinate reference system -- see last unit in this workshop</small>
+-->
 
 ## Sources for geo-data
 
@@ -356,10 +472,25 @@ You may also encounter other formats such as vector data files (`.svg`, `.poly`)
 Good news: `sf` can handle all popular file formats.
 
 
-## QGIS as a geographic information system
+## Exploring geo-data files with QGIS {.smaller}
+
+[QGIS](https://www.qgis.org/) is a free, open-source GIS software running on all major operating systems.
+
+- useful for exploring downloaded geo-data files
+- I will show how to load a geo-data file and investigate properties of individual shapes
+- if you've installed QGIS, you can follow along
+
+<div class="fullfig">
+  <img src="figures/qgis-de-al6-bln.png" alt="QGIS screenshot" style="width:70%">
+</div>
+
+
+# Lunch break
 
 
 # A short introduction to data linkage with *dplyr*
+
+TODO: handout only?
 
 ## Data linkage with *dplyr* {.smaller .build}
 
@@ -466,6 +597,14 @@ ggplot() + geom_sf(data = norway)
 
 
 ## Projections
+
+## TODO
+
+- coord_sf / st_crop
+
+- labels:
+- st_centroid
+- col_bind
 
 ## Further reading
 
