@@ -25,10 +25,10 @@ TODO: nachträglich anpassen
 
 -- lunch break --
 
-2. A short introduction to data linkage with *dplyr*
-5. Combining data and making a *choropleth map*
-6. Geo-coding and reverse geo-coding via Google Maps API
-7. Coordinate reference systems and projections
+5. A short introduction to data linkage with *dplyr*
+6. Combining data and making a *choropleth map*
+7. Geo-coding and reverse geo-coding via Google Maps API
+8. Coordinate reference systems and projections
 
 
 # Introduction
@@ -153,7 +153,7 @@ install.packages(c('maps', 'maptools', 'sf', 'rgeos'))
 
 ## Simple features {.build .smaller}
 
-Most packages for working with geo-data in R rely on the *Simple Features* standard (most prominently the `sf` package).
+Most packages for working with geo-data in R rely on the *Simple Features* standard (&rarr; `sf` package).
 
 *Simple features* describe how objects in the real world can be represented in computers in terms of their *spatial geometry*:
 
@@ -166,11 +166,13 @@ Examples:
 - name: New York City
 - population: 8.6 mio.
 
-<br>
+or
 
 - geometry: polygons consisting of points at ...
 - name: Italy
 - most popular meal: pizza
+
+A **spatial dataset** is a dataset that contains geo-data (in a `geometry` column) *and* additional attributes of that entity like population, poverty rate, etc.
 
 
 ## Making a world map {.build .smaller}
@@ -578,6 +580,69 @@ How many rows do you expect for an inner join between `pm` and `city_coords`?
 
 ```{r}
 inner_join(pm, city_coords, by = 'city')
+```
+
+# Combining data and making a *choropleth map*
+
+## What is a *choropleth map*? {.smaller .build}
+
+In a *choropleth map*, regions are shaded according to the measurement of some variable, e.g.:
+
+<div class="fullfig">
+  <img src="figures/un_water_scarcity.png" alt="UN Water Scarcity map" style="width:90%"><br>
+  <small>source: [United Nations, "Water for life action"](https://www.un.org/waterforlifedecade/scarcity.shtml)</small>
+</div>
+
+
+## Making a choropleth map {.smaller .build}
+
+- data downloaded from the Berlin Senate Dept. for Urban Dev. and Housing via [FIS Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
+- includes indicators for monitoring of social development (*"Monitoring Soziale Stadtentwicklung 2017"*)¹:
+
+```{r}
+bln_sozind <- read_sf('excercises/data/bln_plr_sozind.geojson')
+head(bln_sozind)
+```
+
+## Making a choropleth map {.smaller}
+
+- data downloaded from the Berlin Senate Dept. for Urban Dev. and Housing via [FIS Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
+- includes indicators for monitoring of social development (*"Monitoring Soziale Stadtentwicklung 2017*")¹:
+
+```{r, echo=FALSE}
+head(bln_sozind[c('PLANNAME', 'STATUS4', 'geometry')], 3)
+```
+
+- aim: visualize spatial distrib. of variable **`STATUS4` -- child poverty rate in percent²**
+- dataset is already a **spatial dataset** containing geo-data in `geometry` column
+
+<small>¹ Note that the FIS-Broker website is kind of awkward to use and you can't link directly to dataset, but you have to search for the mentioned keywords.</small>
+<small>² Portion of children under 15 living in household that obtains social support ("Hartz IV")</small>
+
+
+## Making a choropleth map {.smaller .build}
+
+Directly plotting the map with fill color depending on `STATUS4`:
+
+```{r, fig.height=3.5, fig.align='center'}
+ggplot() + geom_sf(aes(fill = STATUS4), data = bln_sozind)
+```
+
+Problem: `STATUS4` is continuous and so is the color scale. For choropleth maps, discrete ranges are better for discerning the colors.
+
+
+## Making a choropleth map {.smaller .build}
+
+Put the percentages into 5 discrete bins, change the color palette, adjust the appearance:
+
+```{r, fig.height=3.5, fig.align='center'}
+bln_sozind$child_pov_bins <- cut(bln_sozind$STATUS4, seq(0, 100, by = 20))
+ggplot() + geom_sf(aes(fill = child_pov_bins), data = bln_sozind) +
+    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
+                      guide = guide_legend(title = 'Child pov.\nranges in pct.')) +
+    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
+    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
+                       axis.ticks = element_blank())
 ```
 
 
