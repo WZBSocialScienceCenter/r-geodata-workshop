@@ -645,6 +645,68 @@ ggplot() + geom_sf(aes(fill = child_pov_bins), data = bln_sozind) +
                        axis.ticks = element_blank())
 ```
 
+## Combining data {.smaller .build}
+
+Most of the time, you have at least two datasets: one containing the measurement(s) you want to show, the other containing the geo-data.
+
+Example dataset: [People at risk of poverty or social exclusion by NUTS 2 regions (*tgs00107*)](https://ec.europa.eu/eurostat/web/regions/data/main-tables) from Eurostat.
+
+```{r}
+pov_risk <- read.csv('excercises/data/tgs00107_pov_risk_nuts2.csv',
+                     stringsAsFactors = FALSE)
+pov_risk$risk_pct_bins <- cut(pov_risk$risk_pct, seq(0, 100, by = 10))
+
+pov_risk_2016 <- filter(pov_risk, year == 2016)   # 2016 has fewest NAs
+head(pov_risk_2016)
+```
+
+## Combining data {.smaller .build}
+
+We load the [GeoJSON dataset for NUTS level-2 regions provided by Eurostat](https://github.com/eurostat/Nuts2json):
+
+```{r, warning=FALSE, message=FALSE}
+nutsrg2 <- read_sf('excercises/data/nutsrg_2.json')
+st_crs(nutsrg2) <- 3857  # set the correct CRS
+head(nutsrg2)
+```
+
+## Combining data {.smaller .build}
+
+Both datasets contain a NUTS level-2 identifier so we can join them:
+
+```{r}
+pov_risk_2016_geo <- left_join(nutsrg2, pov_risk_2016, by = c('id' = 'nuts'))
+head(pov_risk_2016_geo)
+```
+
+## Plotting the combined data {.smaller .build}
+
+```{r, warning=FALSE, message=FALSE, fig.height=3.5, fig.align='center'}
+(eu_pov_plt <- ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_2016_geo) +
+    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
+                      guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
+    labs(title = 'Poverty in the EU 2016',
+         subtitle = 'Percentage of people at risk of poverty or social exclusion',
+         caption = 'source: Eurostat') +
+    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
+    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
+                       axis.ticks = element_blank()))
+```
+
+## Plotting the combined data
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center'}
+eu_pov_plt
+```
+
+
+## Visualizing spatio-temporal data
+
+facetting
+
+animations
+
+
 
 # Geographic coordinate systems and projections
 

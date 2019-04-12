@@ -61,7 +61,7 @@ You can either download the data directly from the website or use the package [r
 
 ## Administrative authorities in the EU
 
-Administrative authorities often provide geo-data. In the EU, the main source is [eurostat](https://ec.europa.eu/eurostat) which provides data referenced by NUTS code.
+Administrative authorities often provide geo-data. In the EU, the main source is [Eurostat](https://ec.europa.eu/eurostat) which provides data referenced by NUTS code.
 
 - [main NUTS datasets as SHP, GeoJSON, TopoJSON, SVG](https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units/nuts)
 - [Nuts2json](https://github.com/eurostat/Nuts2json) provides another overview for GeoJSON and TopoJSON datasets
