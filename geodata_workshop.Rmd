@@ -682,7 +682,7 @@ head(pov_risk_2016_geo)
 ## Plotting the combined data {.smaller .build}
 
 ```{r, warning=FALSE, message=FALSE, fig.height=3.5, fig.align='center'}
-(eu_pov_plt <- ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_2016_geo) +
+(eu_pov_plt <- ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_2016_geo, size = 0.1) +
     scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
                       guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
     labs(title = 'Poverty in the EU 2016',
@@ -702,10 +702,64 @@ eu_pov_plt
 
 ## Visualizing spatio-temporal data
 
-facetting
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=9, fig.align='center'}
+# 1. assign each year in the poverty data the corresponding year of the map
+pov_risk_10_to_16 <- filter(pov_risk, year %in% seq(2010, 2016, by = 2))
+pov_risk_10_to_16 <- mutate(pov_risk_10_to_16, map_year = case_when(year < 2013 ~ 2010L,
+                                                                    year == 2014 ~ 2013L,
+                                                                    year > 2014 ~ 2016L))
+
+# 2. load geo-data for each available year (2010, 2013 and 2016)
+map_yrs <- unique(pov_risk_10_to_16$map_year)
+nutsrg2_per_yr <- list()
+i <- 1
+for (yr in map_yrs) {
+    nutsrg2_per_yr[[i]] <- read_sf(sprintf('excercises/data/nutsrg_2_%d_epsg3857_20M.json', yr))
+    nutsrg2_per_yr[[i]]$map_year <- yr
+    st_crs(nutsrg2_per_yr[[i]]) <- 3857  # set the correct CRS
+    i <- i + 1
+}
+
+# generate a single data frame with each year's geo-data
+nutsrg2_all_yrs <- do.call(rbind, nutsrg2_per_yr)
+
+# join geo-data and poverty data also on year level
+pov_risk_10_to_16_geo <- left_join(nutsrg2_all_yrs, pov_risk_10_to_16, by = c('id' = 'nuts', 'map_year'))
+
+# repeat missing geo-data for each year and set the respective year
+yr10_na <- filter(pov_risk_10_to_16_geo,  map_year == 2010L & is.na(year))
+yr10_na$year <- 2010
+pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr10_na)
+yr10_na$year <- 2012
+pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr10_na)
+yr13_na <- filter(pov_risk_10_to_16_geo,  map_year == 2013L & is.na(year))
+yr13_na$year <- 2014
+pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr13_na)
+yr16_na <- filter(pov_risk_10_to_16_geo,  map_year == 2016L & is.na(year))
+yr16_na$year <- 2016
+pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr16_na)
+
+# drop the rows with the missing geo-data
+pov_risk_10_to_16_geo <- filter(pov_risk_10_to_16_geo, !is.na(year))
+
+# 3. make the map using facets
+ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_10_to_16_geo, size = 0.1) +
+    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
+                      guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
+    labs(title = 'Poverty in southern EU 2016',
+         subtitle = 'Percentage of people at risk of poverty or social exclusion',
+         caption = 'source: Eurostat') +
+    coord_sf(datum = NA, xlim = c(-12e5, 35e5), ylim = c(41e5, 68e5)) +
+    facet_wrap(~ year, nrow = 2) +   # facets per year
+    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
+                       axis.ticks = element_blank(), legend.position = 'bottom')
+```
+
+## Visualizing spatio-temporal data
 
 animations
 
+interactive
 
 
 # Geographic coordinate systems and projections
