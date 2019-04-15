@@ -16,7 +16,7 @@ set.seed(10042019)
 
 ## Today's schedule
 
-TODO: nachträglich anpassen
+TODO: nachträglich anpassen / nummerierung!
 
 1. Introduction
 2. A short introduction to plotting with *ggplot2*
@@ -28,7 +28,7 @@ TODO: nachträglich anpassen
 5. A short introduction to data linkage with *dplyr*
 6. Combining data and making a *choropleth map*
 7. Geo-coding and reverse geo-coding via Google Maps API
-8. Coordinate reference systems and projections
+8. Making plots publication-ready
 
 
 # Introduction
@@ -157,23 +157,25 @@ Most packages for working with geo-data in R rely on the *Simple Features* stand
 
 *Simple features* describe how objects in the real world can be represented in computers in terms of their *spatial geometry*:
 
-> Features have a *geometry* describing *where* on Earth the feature is located, and they have attributes, which describe other properties.
+> Features have a *geometry* describing *where* on Earth the feature is located, and they have attributes, which describe other properties.<br>
 > -- [`sf` package vignette](https://cran.r-project.org/web/packages/sf/vignettes/sf1.html#what_is_a_feature)
 
 Examples:
 
+<div style="width:50%; float:left;">
 - geometry: point at *-73.94°, 40.6°*
 - name: New York City
 - population: 8.6 mio.
-
-or
-
-- geometry: polygons consisting of points at ...
+</div>
+<div style="width:50%; float:left;">
+- geometry: polygons with of points at ...
 - name: Italy
 - most popular meal: pizza
+</div>
 
-A **spatial dataset** is a dataset that contains geo-data (in a `geometry` column) *and* additional attributes of that entity like population, poverty rate, etc.
-
+<div style="clear:left">
+A **spatial dataset** is a dataset that contains geo-data (in a `geometry` column) *and* attributes of that entity like population, poverty rate, etc.
+</div>
 
 ## Making a world map {.build .smaller}
 
@@ -194,8 +196,8 @@ worldmap_data <- st_as_sf(map('world', plot = FALSE, fill = TRUE))
 head(worldmap_data, n = 3)  # to have a look inside
 ```
 
-- dataset with a "header" giving some general information
-- two columns: `geometry` (spatial data) and `ID` ("meta data")
+- **spatial dataset** with a "header" giving some general information
+- two columns: `geometry` (spatial data) and `ID` (attribute)
 
 What do the numbers in the `geometry` column mean? What's their CRS?
 
@@ -387,12 +389,9 @@ ggplot() + geom_sf(aes(fill = show_label), data = ger_al6) +
 
 ## Berlin: LOR codes {.smaller .build}
 
-Since 2006, Berlin uses *"Lebensweltlich orientierte Räume" (LOR)* to structure the city area into sub-regions at different levels, each of them identified by "LOR" code.
+Since 2006, Berlin uses *"Lebensweltlich orientierte Räume" (LOR)* to structure the city area into sub-regions at different levels, each of them identified by "LOR" code:
 
-1. *Prognoseräume* (60 regions)
-2. *Bezirksregionen* (138 regions)
-3. *Planungsräume* (447 regions)
-
+Level 1: *Prognoseräume* (60 regions); Level 2: *Bezirksregionen* (138 regions); Level 3: *Planungsräume* (447 regions)
 
 ```{r, echo=FALSE, warning=FALSE}
 bln_plan <- read_sf('excercises/data/Planungsraum_EPSG_25833.shp')
@@ -488,309 +487,4 @@ Good news: `sf` can handle all popular file formats.
 
 
 # Lunch break
-
-
-# A short introduction to data linkage with *dplyr*
-
-TODO: handout only?
-
-## Data linkage with *dplyr* {.smaller .build}
-
-```{r, include=FALSE}
-pm <- data.frame(city = c('Amman', 'Saltillo', 'Usak', 'The Bronx', 'Seoul'),
-                 pm_mg = c(999, 869, 814, 284, 129),
-                 stringsAsFactors = FALSE)
-city_coords <- data.frame(city = c('Amman', 'Saltillo', 'Berlin', 'Usak', 'New York', 'Seoul'),
-                          lng = c(31.910341, 1, 1, 1, 1, 1),
-                          lat = c(35.948458, 1, 1, 1, 1, 1),
-                          stringsAsFactors = FALSE)
-```
-
-Two datasets:
-
-```{r, echo=FALSE}
-knitr::kable(pm, caption = 'Particular matter: "pm" dataset', align = 'l', format = "html", table.attr = 'class="table table-condensed small left"')
-```
-
-```{r, echo=FALSE}
-knitr::kable(city_coords, caption = 'GPS coordinates of cities: "city_coords" dataset', align = 'l', format = "html", table.attr = 'class="table table-condensed small"')
-```
-
-<div style="clear:both"><br></div>
-
-- to combine these datasets, the "city" column might be used as identifier for matching
-- not all cities in "pm" also appear in "city_coords" and vice versa
-
-
-## Join operations {.smaller .build}
-
-```{r, echo=FALSE}
-knitr::kable(pm, caption = 'pm', align = 'l', format = "html", table.attr = 'class="table table-condensed small left"')
-```
-
-```{r, echo=FALSE}
-knitr::kable(city_coords, caption = 'city_coords', align = 'l', format = "html", table.attr = 'class="table table-condensed small"')
-```
-
-<div style="clear:both"></div>
-
-<br>Datasets can also be joined with `merge`, but I find *dplyr* easier to use.
-
-`left_join(a, b, by = <criterion>)`: **always retains rows on the "left side"** and fills up non-matching rows with *NA*s.
-
-```{r, warning=FALSE, message=FALSE}
-library(dplyr)
-left_join(pm, city_coords, by = 'city')
-```
-
-## Join operations {.smaller .build}
-
-```{r, echo=FALSE}
-knitr::kable(pm, caption = 'pm', align = 'l', format = "html", table.attr = 'class="table table-condensed small left"')
-```
-
-```{r, echo=FALSE}
-knitr::kable(city_coords, caption = 'city_coords', align = 'l', format = "html", table.attr = 'class="table table-condensed small"')
-```
-
-<div style="clear:both"></div>
-
-<br>`right_join(a, b, by = <criterion>)`: **always retains rows on the "right side"** and fills up non-matching rows with *NA*s. **How many rows do you expect for a right join between `pm` and `city_coords`? How many of them will contain an *NA* value?**
-
-```{r}
-right_join(pm, city_coords, by = 'city')
-```
-
-
-## Join operations {.smaller .build}
-
-```{r, echo=FALSE}
-knitr::kable(pm, caption = 'pm', align = 'l', format = "html", table.attr = 'class="table table-condensed small left"')
-```
-
-```{r, echo=FALSE}
-knitr::kable(city_coords, caption = 'city_coords', align = 'l', format = "html", table.attr = 'class="table table-condensed small"')
-```
-
-<div style="clear:both"></div>
-
-<br>`inner_join(a, b, by = <criterion>)`: **only retains rows that match on both sides.**
-
-How many rows do you expect for an inner join between `pm` and `city_coords`?
-
-```{r}
-inner_join(pm, city_coords, by = 'city')
-```
-
-# Combining data and making a *choropleth map*
-
-## What is a *choropleth map*? {.smaller .build}
-
-In a *choropleth map*, regions are shaded according to the measurement of some variable, e.g.:
-
-<div class="fullfig">
-  <img src="figures/un_water_scarcity.png" alt="UN Water Scarcity map" style="width:90%"><br>
-  <small>source: [United Nations, "Water for life action"](https://www.un.org/waterforlifedecade/scarcity.shtml)</small>
-</div>
-
-
-## Making a choropleth map {.smaller .build}
-
-- data downloaded from the Berlin Senate Dept. for Urban Dev. and Housing via [FIS Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
-- includes indicators for monitoring of social development (*"Monitoring Soziale Stadtentwicklung 2017"*)¹:
-
-```{r}
-bln_sozind <- read_sf('excercises/data/bln_plr_sozind.geojson')
-head(bln_sozind)
-```
-
-## Making a choropleth map {.smaller}
-
-- data downloaded from the Berlin Senate Dept. for Urban Dev. and Housing via [FIS Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
-- includes indicators for monitoring of social development (*"Monitoring Soziale Stadtentwicklung 2017*")¹:
-
-```{r, echo=FALSE}
-head(bln_sozind[c('PLANNAME', 'STATUS4', 'geometry')], 3)
-```
-
-- aim: visualize spatial distrib. of variable **`STATUS4` -- child poverty rate in percent²**
-- dataset is already a **spatial dataset** containing geo-data in `geometry` column
-
-<small>¹ Note that the FIS-Broker website is kind of awkward to use and you can't link directly to dataset, but you have to search for the mentioned keywords.</small>
-<small>² Portion of children under 15 living in household that obtains social support ("Hartz IV")</small>
-
-
-## Making a choropleth map {.smaller .build}
-
-Directly plotting the map with fill color depending on `STATUS4`:
-
-```{r, fig.height=3.5, fig.align='center'}
-ggplot() + geom_sf(aes(fill = STATUS4), data = bln_sozind)
-```
-
-Problem: `STATUS4` is continuous and so is the color scale. For choropleth maps, discrete ranges are better for discerning the colors.
-
-
-## Making a choropleth map {.smaller .build}
-
-Put the percentages into 5 discrete bins, change the color palette, adjust the appearance:
-
-```{r, fig.height=3.5, fig.align='center'}
-bln_sozind$child_pov_bins <- cut(bln_sozind$STATUS4, seq(0, 100, by = 20))
-ggplot() + geom_sf(aes(fill = child_pov_bins), data = bln_sozind) +
-    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
-                      guide = guide_legend(title = 'Child pov.\nranges in pct.')) +
-    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
-    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
-                       axis.ticks = element_blank())
-```
-
-## Combining data {.smaller .build}
-
-Most of the time, you have at least two datasets: one containing the measurement(s) you want to show, the other containing the geo-data.
-
-Example dataset: [People at risk of poverty or social exclusion by NUTS 2 regions (*tgs00107*)](https://ec.europa.eu/eurostat/web/regions/data/main-tables) from Eurostat.
-
-```{r}
-pov_risk <- read.csv('excercises/data/tgs00107_pov_risk_nuts2.csv',
-                     stringsAsFactors = FALSE)
-pov_risk$risk_pct_bins <- cut(pov_risk$risk_pct, seq(0, 100, by = 10))
-
-pov_risk_2016 <- filter(pov_risk, year == 2016)   # 2016 has fewest NAs
-head(pov_risk_2016)
-```
-
-## Combining data {.smaller .build}
-
-We load the [GeoJSON dataset for NUTS level-2 regions provided by Eurostat](https://github.com/eurostat/Nuts2json):
-
-```{r, warning=FALSE, message=FALSE}
-nutsrg2 <- read_sf('excercises/data/nutsrg_2.json')
-st_crs(nutsrg2) <- 3857  # set the correct CRS
-head(nutsrg2)
-```
-
-## Combining data {.smaller .build}
-
-Both datasets contain a NUTS level-2 identifier so we can join them:
-
-```{r}
-pov_risk_2016_geo <- left_join(nutsrg2, pov_risk_2016, by = c('id' = 'nuts'))
-head(pov_risk_2016_geo)
-```
-
-## Plotting the combined data {.smaller .build}
-
-```{r, warning=FALSE, message=FALSE, fig.height=3.5, fig.align='center'}
-(eu_pov_plt <- ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_2016_geo, size = 0.1) +
-    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
-                      guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
-    labs(title = 'Poverty in the EU 2016',
-         subtitle = 'Percentage of people at risk of poverty or social exclusion',
-         caption = 'source: Eurostat') +
-    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
-    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
-                       axis.ticks = element_blank()))
-```
-
-## Plotting the combined data
-
-```{r, echo=FALSE, warning=FALSE, fig.align='center'}
-eu_pov_plt
-```
-
-
-## Visualizing spatio-temporal data
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=9, fig.align='center'}
-# 1. assign each year in the poverty data the corresponding year of the map
-pov_risk_10_to_16 <- filter(pov_risk, year %in% seq(2010, 2016, by = 2))
-pov_risk_10_to_16 <- mutate(pov_risk_10_to_16, map_year = case_when(year < 2013 ~ 2010L,
-                                                                    year == 2014 ~ 2013L,
-                                                                    year > 2014 ~ 2016L))
-
-# 2. load geo-data for each available year (2010, 2013 and 2016)
-map_yrs <- unique(pov_risk_10_to_16$map_year)
-nutsrg2_per_yr <- list()
-i <- 1
-for (yr in map_yrs) {
-    nutsrg2_per_yr[[i]] <- read_sf(sprintf('excercises/data/nutsrg_2_%d_epsg3857_20M.json', yr))
-    nutsrg2_per_yr[[i]]$map_year <- yr
-    st_crs(nutsrg2_per_yr[[i]]) <- 3857  # set the correct CRS
-    i <- i + 1
-}
-
-# generate a single data frame with each year's geo-data
-nutsrg2_all_yrs <- do.call(rbind, nutsrg2_per_yr)
-
-# join geo-data and poverty data also on year level
-pov_risk_10_to_16_geo <- left_join(nutsrg2_all_yrs, pov_risk_10_to_16, by = c('id' = 'nuts', 'map_year'))
-
-# repeat missing geo-data for each year and set the respective year
-yr10_na <- filter(pov_risk_10_to_16_geo,  map_year == 2010L & is.na(year))
-yr10_na$year <- 2010
-pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr10_na)
-yr10_na$year <- 2012
-pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr10_na)
-yr13_na <- filter(pov_risk_10_to_16_geo,  map_year == 2013L & is.na(year))
-yr13_na$year <- 2014
-pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr13_na)
-yr16_na <- filter(pov_risk_10_to_16_geo,  map_year == 2016L & is.na(year))
-yr16_na$year <- 2016
-pov_risk_10_to_16_geo <- rbind(pov_risk_10_to_16_geo, yr16_na)
-
-# drop the rows with the missing geo-data
-pov_risk_10_to_16_geo <- filter(pov_risk_10_to_16_geo, !is.na(year))
-
-# 3. make the map using facets
-ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_10_to_16_geo, size = 0.1) +
-    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
-                      guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
-    labs(title = 'Poverty in southern EU 2016',
-         subtitle = 'Percentage of people at risk of poverty or social exclusion',
-         caption = 'source: Eurostat') +
-    coord_sf(datum = NA, xlim = c(-12e5, 35e5), ylim = c(41e5, 68e5)) +
-    facet_wrap(~ year, nrow = 2) +   # facets per year
-    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
-                       axis.ticks = element_blank(), legend.position = 'bottom')
-```
-
-## Visualizing spatio-temporal data
-
-animations
-
-interactive
-
-
-# Geographic coordinate systems and projections
-
-## Vector data
-
-## Coordinate reference systems and units
-
-```{r}
-(norway <- worldmap_data[worldmap_data$ID == 'Norway',])
-```
-
-```{r, fig.width=8}
-ggplot() + geom_sf(data = norway)
-```
-
-
-## Projections
-
-## TODO
-
-- coord_sf / st_crop
-
-- labels:
-- st_centroid
-- col_bind
-
-## Further reading
-
-- sf vignette
-- https://cran.r-project.org/web/views/Spatial.html
-- https://geocompr.robinlovelace.net/
-- ggplot2
 
