@@ -13,6 +13,8 @@ output:
 knitr::opts_chunk$set(R.options = list(max.print = 50))
 set.seed(10042019)
 
+source('apikeys.R')
+
 library(sf)
 library(maps)
 library(ggplot2)
@@ -226,6 +228,10 @@ head(pov_risk_2016_geo)
 eu_pov_plt
 ```
 
+## Excercise 2 {.smaller}
+
+TODO: Choropleth map
+
 
 ## Visualizing spatio-temporal data
 
@@ -318,8 +324,8 @@ ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_10_to_16_geo, size
 ## Visualizing spatio-temporal data {.smaller}
 
 - interactive plots (e.g. with a "time-slider") are harder to do
-- interactive maps can be made in R with [Shiny](http://shiny.rstudio.com/)
-- more sophisticated maps may require lots of manual programming
+- interactive maps can be made in R with packages [leaflet](https://cran.r-project.org/web/packages/leaflet/index.html) or [Shiny](http://shiny.rstudio.com/)
+- more sophisticated maps may require lots of programming effort
 
 <div class="fullfig">
   <img src="figures/schulenkarte.png" alt="Schulenkarte Screenshot" style="max-width:60%"><br>
@@ -327,17 +333,78 @@ ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_10_to_16_geo, size
 </div>
 
 
-# Geographic coordinate systems and projections
+# Geocoding and reverse geocoding via Google Maps API
 
-## Vector data
+## What is geocoding? {.smaller .build}
 
-## Coordinate reference systems and units
+**Geocoding** is the process of finding the geographic coordinates (longitude, latitude) for a specific query term (a full address, a postal code, a city name etc.).
+
+- *Reichpietschufer 50, 10785 Berlin* &rarr; `13.36509, 52.50640`
+- *cute cat cafe new york* &rarr; `-73.896916, 40.706934`
+
+**Reverse geocoding** tries to map a set of geographic coordinates to a place name / address.
+
+- `13.36509, 52.50640` &rarr; *Reichpietschufer 50, 10785 Berlin*
 
 
+## Getting access {.smaller .build}
 
-## Projections
+The [Google Maps API](https://cloud.google.com/maps-platform/) is a web service that allows programmatic geocoding or reverse geocoding (among other things). But simply, this means:
 
-## TODO
+- you send a list of queries (e.g. addresses) to a Google server
+- the server responds with a list of geo-coordinates
+
+As of June 2018, the Maps API is part of Google's "Could Platform". This requires you to have:
+
+1. A Google account (surprise!).
+2. Start a [Google Cloud Platform (GCP)](https://cloud.google.com/) free trial (valid for one year).
+3. Register for billing (they want your credit card).<br>
+    They promise not to charge it after the end of the free trial...
+
+Inside GCP, you can go to *APIs & Services > Credentials* to get your API key.
+
+
+## Using *ggmap* for geocoding {.build .smaller}
+
+You need to install the package *ggmap*, at least of version 2.7.
+
+```{r, message=FALSE}
+library(ggmap)
+
+# provide the Google Cloud API key here:
+register_google(key = google_cloud_api_key)
+
+places <- c('Berlin', 'Leipzig', '10317, Deutschland',
+            'Reichpietschufer 50, 10785 Berlin')
+#place_coords <- geocode(places) %>% mutate(place = places)
+#place_coords
+```
+
+
+## Reverse geocoding {.build .smaller}
+
+Take the WZB's geo-coordinates and see if we can find the address to it:
+
+```{r, message=FALSE}
+# first longitude, then latitude
+#revgeocode(c(13.36509, 52.50640))
+```
+
+Social media posts or digital photos often contain geo-coordinates that you may want to "reverse geocode".
+
+
+# Making plots publication-ready
+
+
+## Geographic coordinate systems and projections
+
+## Setting the display window
+
+## Finding centroids of regions
+
+## Labelling regions
+
+## Labelling regions without occlusion
 
 - coord_sf / st_crop
 

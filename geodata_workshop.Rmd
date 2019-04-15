@@ -16,8 +16,6 @@ set.seed(10042019)
 
 ## Today's schedule
 
-TODO: nachträglich anpassen / nummerierung!
-
 1. Introduction
 2. A short introduction to plotting with *ggplot2*
 3. Hello world: Plotting points on a world map
@@ -25,36 +23,144 @@ TODO: nachträglich anpassen / nummerierung!
 
 -- lunch break --
 
-5. A short introduction to data linkage with *dplyr*
-6. Combining data and making a *choropleth map*
-7. Geo-coding and reverse geo-coding via Google Maps API
-8. Making plots publication-ready
-
+<ol start="5">
+<li>A short introduction to data linkage with *dplyr*</li>
+<li>Combining data and making a *choropleth map*</li>
+<li>Geocoding and reverse geocoding via Google Maps API</li>
+<li>Making plots publication-ready</li>
+</ol>
 
 # Introduction
 
-## About me
+## About me {.build}
 
-TODO
+- working at WZB as Data Scientist in IT dept. since April 2016
+- my job: doing everything that requires non-trivial programming
+    - data extraction and preparation (e.g. data retrieval from APIs, web scraping, data extraction from PDFs)
+    - quantitive text analysis
+    - interactive and static visualizations
+    - implementing experiments
+    - designing and implementing research databases
+    - apparently giving workshops
 
-## Aims of today's workshop
+contact: markus.konrad@wzb.eu | tel -555 | office D005
 
-TODO
+## Aims of today's workshop {.build}
 
-full flexibility
+- will show how to use R with *geo-spatial data*
+- main focus on visualization; no spatial data analysis
+- sources and file formats for geographic data
+- combine your data with existing geographic data
 
-but even things that look simple are actually quite complex
+Why use R for that?
+
+- for simple things, you can use online tools like [datawrapper](https://www.datawrapper.de/)
+- but: R gives you several advantages over these tools
+    - it's for free
+    - offers full flexibility
+    - no need to switch tools
+
 
 # A short introduction to plotting with *ggplot2*
 
-## Plotting with *ggplot2* {.build .smaller}
+## Plotting with *ggplot2* {.build}
 
-There are three basic steps for constructing plots with *ggplot2*:
+- *ggplot2*: versatile package to create elegant plots with R
+- based on a theory for declaratively creating graphics called *"Grammar of Graphics"* (Wilkinson 2005)
+- documentation on https://ggplot2.tidyverse.org/
 
-1. Supply a data set you want to plot to `ggplot()`.
-2. Define an **aesthetic mapping** with `aes()`.<br>
-    This describes how variables of your data are mapped to visual properties, e.g. variable "age" is plotted on the x-axis and "income" on the y-axis.
-3. Add layers of **geoms** (geometrical objects) that describe which graphical primitives to use (e.g. points in a scatter plot or bars in a bar plot).
+<br>
+
+- ggplot works by providing a dataset and mapping its variables to visual properties, e.g. variable `age` should be on the x-axis, `income` should be on the y-axis
+- with the same principle, maps can be made, e.g.: variable `GDP` determines the color of a country
+
+## Plotting with *ggplot2*: Example dataset {.build .smaller}
+
+We'll have a look at the principles of ggplot2 in general, which we can later apply to making maps.
+
+We'll make a plot for historical election results from four randomly selected states in the US (dataset `presidentialElections` from package *pscl*):
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(pscl)
+library(dplyr)
+
+sampled_states <- presidentialElections %>%
+  distinct(state, south) %>%
+  group_by(south) %>%    # group by south / not south
+  sample_n(2) %>%        # take 2 from each group
+  ungroup() %>%
+  pull(state)
+
+sampled_pres <- filter(presidentialElections, state %in% sampled_states)
+sampled_pres
+```
+
+## Plotting with *ggplot2*: Step 1 {.build .smaller}
+
+Step 1: Load ggplot2 and pass the dataset.
+
+```{r, warning=FALSE, message=FALSE, fig.height=4, fig.align='center'}
+library(ggplot2)
+
+ggplot(sampled_pres)
+```
+
+## Plotting with *ggplot2*: Step 2 {.build .smaller}
+
+Step 2: Specify an **aesthetic mapping** via `aes()`.<br>
+This describes how variables of your data are mapped to visual properties: "year" is plotted on the x-axis and the share of votes for Democrats on the y-axis.
+
+```{r, warning=FALSE, message=FALSE, fig.height=4, fig.align='center'}
+ggplot(sampled_pres, aes(x = year, y = demVote))
+```
+
+## Plotting with *ggplot2*: Step 3 {.build .smaller}
+
+Step 3: Adding a **geom**.<br>
+geoms are geometric objects; they describe which graphical primitives to use (e.g. points in a scatter plot or bars in a bar plot). Notice that this plot looks wrong. We'll fix that next.
+
+```{r, warning=FALSE, message=FALSE, fig.height=4, fig.align='center'}
+ggplot(sampled_pres, aes(x = year, y = demVote)) + geom_line()
+```
+
+
+## Plotting with *ggplot2*: Step 4 {.build .smaller}
+
+Step 4: Fixing the aesthetic mapping.<br>
+The previous plot looked wrong because several y-values appeared for the same years and **they were all connected by a single line**: For each year, we have a y-value (vote share) for each state! We adjust the **aesthetic mapping** by making the line color dependent on `state`, hence we have a line (of different color) per state:
+
+```{r, warning=FALSE, message=FALSE, fig.height=4, fig.align='center'}
+ggplot(sampled_pres, aes(x = year, y = demVote, color = state)) + geom_line()
+```
+
+
+## Plotting with *ggplot2*: Step 5 {.build .smaller}
+
+Step 5: Adding another layer.<br>
+We can add more geometric objects by adding another `geom_` layer. For better readability, I put the layer functions on separate lines:
+
+```{r, warning=FALSE, message=FALSE, fig.height=4, fig.align='center'}
+ggplot(sampled_pres, aes(x = year, y = demVote, color = state)) +
+    geom_line() +
+    geom_point()
+```
+
+
+## Plotting with *ggplot2*: Datasets per layer {.build .smaller}
+
+- when you pass a dataset and aesthetic mapping to `ggplot()` it used by all layers as default
+- you can override it in each `geom_...` layer by setting `aes(...)` and `data = ...`
+- each layer may actually use a different dataset; when plotting maps, this is often used (e.g. one layer with data for a "background map", another for points on it)
+
+```{r, warning=FALSE, message=FALSE, fig.height=3, fig.align='center'}
+random_dots <- data.frame(x = sample(sampled_pres$year, 10),
+                          y = rnorm(10, mean = 50, sd = 10))
+ggplot() +
+    geom_line(aes(x = year, y = demVote, color = state), data = sampled_pres) +
+    geom_point(aes(x = x, y = y), data = random_dots) # use a different dataset here
+```
+
+## Further customizations {.build}
 
 Additionally, you can further change the appearance of your plot by: 
 
@@ -63,34 +169,6 @@ Additionally, you can further change the appearance of your plot by:
 - changing the overall appearance of the plot by adjusting its **theme** (e.g. change background color, rotate axis labels, etc.)
 
 You combine all these steps with a `+`.
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components1.png" alt="ggplot2 components - 1" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components2.png" alt="ggplot2 components - 2" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components3.png" alt="ggplot2 components - 3" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components4.png" alt="ggplot2 components - 4" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components5.png" alt="ggplot2 components - 5" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components6.png" alt="ggplot2 components - 6" class="standalone">
-
-## General concepts behind *ggplot2*
-
-<img src="figures/ggplot2_components7.png" alt="ggplot2 components - 7" class="standalone">
 
 # Hello world: Plotting points on a world map
 
@@ -132,7 +210,7 @@ ggplot() + geom_sf(data = worldmap_data) + geom_sf(data = nyc, color = 'red', si
     theme_bw()
 ```
 
-- points can be connected to form other geometrical shapes such as *lines* or *polygons*
+- points can be connected to form other geometric shapes such as *lines* or *polygons*
 - points and shapes can represent numerous geographic entities: cities, buildings, countries, rivers, lakes, etc.
 
 
@@ -484,7 +562,4 @@ Good news: `sf` can handle all popular file formats.
 <div class="fullfig">
   <img src="figures/qgis-de-al6-bln.png" alt="QGIS screenshot" style="width:70%">
 </div>
-
-
-# Lunch break
 
