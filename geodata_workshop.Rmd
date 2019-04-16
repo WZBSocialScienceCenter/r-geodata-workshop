@@ -2,7 +2,7 @@
 title: "Working with Geo-Data"
 subtitle: "NaWi-Workshop: Obtaining, linking and plotting geographic data"
 author: "Markus Konrad"
-date: "??? (TODO), 2019"
+date: "May 6, 2019"
 output:
   ioslides_presentation:
     logo: slides_custom/wzbfirmierungquerschwarzmitschrift.png
@@ -58,6 +58,7 @@ Why use R for that?
 - but: R gives you several advantages over these tools
     - it's for free
     - offers full flexibility
+    - also supports geo-spatial analysis (distances, clustering, regional densities, etc.)
     - no need to switch tools
 
 
@@ -169,6 +170,16 @@ Additionally, you can further change the appearance of your plot by:
 - changing the overall appearance of the plot by adjusting its **theme** (e.g. change background color, rotate axis labels, etc.)
 
 You combine all these steps with a `+`.
+
+## Excercise 1
+
+**1. For those new to ggplot: Making a scatterplot**
+
+- load `ggplot2` and inform yourself about the `msleep` dataset
+- make a scatterplot with `bodywt` on x-axis, `sleep_total` on y-axis
+- improve the plot by:
+    - transforming the x scale to log10 `scale_x_log10()`
+    - making the dot color dependent on `vore`
 
 # Hello world: Plotting points on a world map
 
@@ -322,37 +333,74 @@ ggplot(some_cities) +                                  # pass the cities data to
           axis.text = element_blank())                 # disable the axis labels
 ```
 
-## Excercise 1 {.smaller}
+## Excercises 2 and 3 {.even-smaller}
 
-TODO: Anpassen / 2 mgl. Übungen?
+**Choose *one* of the following two tasks (or make both if you like):**
 
-**Visualizing WZB partner institutions on a world map**
+**2. (Birth-)places on a map**
 
-Make a script that:
+- form a small group (3 to 4 people) and make a dataset with your birthplaces (or favourite travel destinations or whatever you like) and their geo-coordinates
+    - see handout on how to find out the geo-coordinates for any place
+    - your dataset should have three columns: longitude, latitude, label
+- plot the points on a world map and add labels to them
+- if your points are too near to each other on a global scale:
+    - consider filtering the "worldmap" dataset to contain only the country you need to plotting
+    - or: restrict the display window (see hints in handout)
 
-1. Load the CSV file `wzb_partners_data.csv`
-2. Load the data for the world map
-3. Remove the shape (i.e. the "feature") for Antarctica from the world map data
-4. Make a plot, showing the partner institutions with a dot on the world map (optional: make the color dependent on the "type" column)
-5. Optional: Group institutions by city and count institutions per city; show the city locations in Europe only as a dot, make the dot size dependent on number of institutions
+**3. Visualizing WZB partner institutions on a world map**
 
-**See further hints on handout.**
+- load the CSV file `wzb_partners_data.csv` and the data for the world map
+- remove the shape (i.e. the "feature") for Antarctica from the world map data
+- make a plot, showing the partner institutions with a dot on the world map (optional: make the color dependent on the "type" column)
+- optional: group and count institutions per city; show the city locations in Europe (restrict the display window -- see hints in handout) only as a dot, make the dot size dependent on number of institutions
+
 
 # Sources and file formats for geo-data
 
 ## Administrative levels and identifiers {.smaller .build}
 
-Suppose you have observations that refer to geographic locations, e.g. countries, cities, neighborhoods. You may want to:
+In order to ...
 
-- **link** that data with existing information on that geographic entity e.g. country GDP, city population, poverty rate in the neighboorhood
-- **visualize** that data geographically
+- **link** your data with existing information on geographic entities e.g. country GDP, city population, poverty rate in the neighboorhood
+- **visualize** your data geographically
 
-For both things you need to:
+... you need to:
 
-1. agree on **geographic (administrative) level** for matching (e.g. country, state, municipality)
+1. agree on **(administrative) level** for matching (e.g. country, state, municipality)
 2. find **identifiers** to match the observations w/ respective geographic entities
 
-TODO: schematische darstellung
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.align='center'}
+library(ggrepel)
+
+nutsrg123 <- lapply(1:3, function(lvl) {
+    nutsrg <- read_sf(sprintf('excercises/data/nutsrg_%d.json', lvl))
+    nutsrg$level <- lvl
+    st_crs(nutsrg) <- 3857
+    nutsrg
+})
+
+nutsrg123 <- do.call(rbind, nutsrg123)
+nutsrg123$level <- as.ordered(nutsrg123$level)
+
+nuts_brugge <- nutsrg123[nutsrg123$id %in% c('BE2', 'BE25', 'BE251'),]
+nuts_brugge <- cbind(nuts_brugge, st_coordinates(st_centroid(nuts_brugge$geometry)))
+nuts_brugge$label <- paste0('Level ', nuts_brugge$level, ', ID=', nuts_brugge$id, '\n', nuts_brugge$na)
+
+ggplot() +
+    geom_sf(size = 0.5, alpha = 0.25, data = nutsrg123) +
+    geom_sf(aes(fill = level), data = nuts_brugge) +
+    geom_label_repel(aes(label = label, x = X, y = Y, color = level),
+                     data = nuts_brugge, size = 3, nudge_x = 2e5, nudge_y = 5e4) +
+    coord_sf(datum = NA, xlim = c(0, 10e5), ylim = c(64e5, 70e5)) +
+    scale_size_continuous(guide = 'none') +
+    scale_fill_discrete(guide = 'none') +
+    scale_color_discrete(guide = 'none') +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank())
+```
+
 
 ## Country names, country codes {.smaller .build}
 
@@ -362,7 +410,6 @@ TODO: schematische darstellung
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(rnaturalearth)
-library(ggrepel)
 library(dplyr)
 
 world <- ne_countries(type = 'map_units', returnclass = 'sf', continent = 'europe')

@@ -2,7 +2,7 @@
 title: "Working with Geo-Data (part 2)"
 subtitle: "NaWi-Workshop: Obtaining, linking and plotting geographic data"
 author: "Markus Konrad"
-date: "??? (TODO), 2019"
+date: "May 6, 2019"
 output:
   ioslides_presentation:
     logo: slides_custom/wzbfirmierungquerschwarzmitschrift.png
@@ -397,6 +397,8 @@ Social media posts or digital photos often contain geo-coordinates that you may 
 
 
 ## Geographic coordinate systems and projections
+
+EPSG
 
 ## Setting the display window
 
