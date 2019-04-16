@@ -22,8 +22,6 @@ library(ggplot2)
 
 # A short introduction to data linkage with *dplyr*
 
-TODO: handout only?
-
 ## Data linkage with *dplyr* {.smaller .build}
 
 ```{r, include=FALSE}
@@ -31,8 +29,8 @@ pm <- data.frame(city = c('Amman', 'Saltillo', 'Usak', 'The Bronx', 'Seoul'),
                  pm_mg = c(999, 869, 814, 284, 129),
                  stringsAsFactors = FALSE)
 city_coords <- data.frame(city = c('Amman', 'Saltillo', 'Berlin', 'Usak', 'New York', 'Seoul'),
-                          lng = c(31.910341, 1, 1, 1, 1, 1),
-                          lat = c(35.948458, 1, 1, 1, 1, 1),
+                          lng = c(31.910,   -100.994,   13.402,    29.403, -73.94,    126.983762),
+                          lat = c(35.948,    25.434,    52.520,    38.673,  40.6,     37.536256),
                           stringsAsFactors = FALSE)
 ```
 
@@ -130,7 +128,7 @@ In a *choropleth map*, regions are shaded according to the measurement of some v
 - includes indicators for monitoring of social development (*"Monitoring Soziale Stadtentwicklung 2017"*):
 
 ```{r}
-bln_sozind <- read_sf('excercises/data/bln_plr_sozind.geojson')
+bln_sozind <- read_sf('data/bln_plr_sozind.geojson')
 head(bln_sozind)
 ```
 
@@ -180,7 +178,7 @@ Most of the time, you have at least two datasets: one containing the measurement
 Example dataset: [People at risk of poverty or social exclusion by NUTS 2 regions (*tgs00107*)](https://ec.europa.eu/eurostat/web/regions/data/main-tables) from Eurostat.
 
 ```{r}
-pov_risk <- read.csv('excercises/data/tgs00107_pov_risk_nuts2.csv',
+pov_risk <- read.csv('data/tgs00107_pov_risk_nuts2.csv',
                      stringsAsFactors = FALSE)
 pov_risk$risk_pct_bins <- cut(pov_risk$risk_pct, seq(0, 100, by = 10))
 
@@ -193,7 +191,7 @@ head(pov_risk_2016)
 We load the [GeoJSON dataset for NUTS level-2 regions provided by Eurostat](https://github.com/eurostat/Nuts2json):
 
 ```{r, warning=FALSE, message=FALSE}
-nutsrg2 <- read_sf('excercises/data/nutsrg_2.json')
+nutsrg2 <- read_sf('data/nutsrg_2.json')
 st_crs(nutsrg2) <- 3857  # set the correct CRS
 head(nutsrg2)
 ```
@@ -228,9 +226,26 @@ head(pov_risk_2016_geo)
 eu_pov_plt
 ```
 
-## Excercise 2 {.smaller}
+## Exercises 4 and 5 {.even-smaller}
 
-TODO: Choropleth map
+**Choose *one* of the following two tasks (or make both if you like):**
+
+**4. A choropleth map of social indicators in Berlin**
+
+- load the CSV file `bln_plr_sozind_data.csv` from folder `4_berlin_sozind`
+    - make sure that the variable `SCHLUESSEL` is loaded as character string, **not** as integer (use `colClasses = c('SCHLUESSEL' = 'character')` in `read.csv()`)
+    - these are the variables in the dataset:<br>
+        STATUS1: Unemployment rate 2016 in percent
+        STATUS2: Long term unemployment rate 2016 in percent<br>
+        STATUS3: Pct. of households that obtain social support ("Hartz IV") 2016<br>
+        STATUS4: Portion of children under 15 living in household that obtains social support ("Hartz IV") 2016<br>
+        DYNAMO1 to 4: Change in the above indicators from the previous year
+- optional: have a look at `bln_plr.geojson` with QGIS
+- load the spatial dataset `bln_plr.geojson` containing the Berlin "Planungsraum" regions
+    - make sure to set the CRS: `st_crs(<DATASET>) <- 25833`
+- join both datasets so that you obtain a combined spatial dataset with the social indicators from `bln_plr_sozind_data.csv` for their respective  regions from `bln_plr.geojson`
+- make a simple choropleth map with a social indicator of your choice
+- create a variable with discrete bins from a social indicator of your choice and use this to make a more useful choropleth map
 
 
 ## Visualizing spatio-temporal data
@@ -257,7 +272,7 @@ map_yrs <- unique(pov_risk_10_to_16$map_year)
 nutsrg2_per_yr <- list()
 i <- 1
 for (yr in map_yrs) {
-    nutsrg2_per_yr[[i]] <- read_sf(sprintf('excercises/data/nutsrg_2_%d_epsg3857_20M.json', yr))
+    nutsrg2_per_yr[[i]] <- read_sf(sprintf('data/nutsrg_2_%d_epsg3857_20M.json', yr))
     nutsrg2_per_yr[[i]]$map_year <- yr
     st_crs(nutsrg2_per_yr[[i]]) <- 3857  # set the correct CRS
     i <- i + 1

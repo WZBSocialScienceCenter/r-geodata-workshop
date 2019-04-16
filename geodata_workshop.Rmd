@@ -171,7 +171,7 @@ Additionally, you can further change the appearance of your plot by:
 
 You combine all these steps with a `+`.
 
-## Excercise 1
+## Exercise 1
 
 **1. For those new to ggplot: Making a scatterplot**
 
@@ -333,7 +333,7 @@ ggplot(some_cities) +                                  # pass the cities data to
           axis.text = element_blank())                 # disable the axis labels
 ```
 
-## Excercises 2 and 3 {.even-smaller}
+## Exercises 2 and 3 {.even-smaller}
 
 **Choose *one* of the following two tasks (or make both if you like):**
 
@@ -349,7 +349,7 @@ ggplot(some_cities) +                                  # pass the cities data to
 
 **3. Visualizing WZB partner institutions on a world map**
 
-- load the CSV file `wzb_partners_data.csv` and the data for the world map
+- load the CSV file `wzb_partners_data.csv` from folder `3_wzb_partners` and the data for the world map
 - remove the shape (i.e. the "feature") for Antarctica from the world map data
 - make a plot, showing the partner institutions with a dot on the world map (optional: make the color dependent on the "type" column)
 - optional: group and count institutions per city; show the city locations in Europe (restrict the display window -- see hints in handout) only as a dot, make the dot size dependent on number of institutions
@@ -373,7 +373,7 @@ In order to ...
 library(ggrepel)
 
 nutsrg123 <- lapply(1:3, function(lvl) {
-    nutsrg <- read_sf(sprintf('excercises/data/nutsrg_%d.json', lvl))
+    nutsrg <- read_sf(sprintf('data/nutsrg_%d.json', lvl))
     nutsrg$level <- lvl
     st_crs(nutsrg) <- 3857
     nutsrg
@@ -451,7 +451,7 @@ Candidate countries and countries inside EFTA also have NUTS regions (Norway, Sw
 ## Finding NUTS in the EU {.smaller}
 
 ```{r, echo=FALSE, warning=FALSE}
-nutsrg2 <- read_sf('excercises/data/nutsrg_2.json')
+nutsrg2 <- read_sf('data/nutsrg_2.json')
 st_crs(nutsrg2) <- 3857
 
 labelsdf <- data.frame(label = sprintf('%s: %s', nutsrg2$id, nutsrg2$na), stringsAsFactors = FALSE)
@@ -480,7 +480,7 @@ In Germany, regions are hierarchically structured and identified by *"Amtlicher 
 ```{r, echo=FALSE, warning=FALSE}
 library(jsonlite)
 
-ger_al6 <- read_sf('excercises/data/Germany_AL6.GeoJson')
+ger_al6 <- read_sf('data/Germany_AL6.GeoJson')
 ger_al6$ags <- sapply(ger_al6$alltags, function(tags) {
     ags <- fromJSON(tags)[['de:amtlicher_gemeindeschluessel']]
     if (is.null(ags)) {
@@ -519,7 +519,7 @@ Since 2006, Berlin uses *"Lebensweltlich orientierte Räume" (LOR)* to structure
 Level 1: *Prognoseräume* (60 regions); Level 2: *Bezirksregionen* (138 regions); Level 3: *Planungsräume* (447 regions)
 
 ```{r, echo=FALSE, warning=FALSE}
-bln_plan <- read_sf('excercises/data/Planungsraum_EPSG_25833.shp')
+bln_plan <- read_sf('data/Planungsraum_EPSG_25833.shp')
 bln_plan$PLR_NAME <- iconv(bln_plan$PLR_NAME, from = 'LATIN1', to = 'UTF-8')
 st_crs(bln_plan) <- 25833
 

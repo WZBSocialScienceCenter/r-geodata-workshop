@@ -2,7 +2,7 @@
 title: "Handout – Working with Geo-Data"
 subtitle: "NaWi-Workshop: Obtaining, linking and plotting geographic data"
 author: "Markus Konrad <markus.konrad@wzb.eu>"
-date: "??? (TODO), 2019"
+date: "May 6, 2019"
 output: 
   html_document: 
     fig_caption: yes
@@ -20,6 +20,40 @@ output:
 # Plotting with *ggplot2*
 
 TODO
+
+# Data linkage with *dplyr*
+
+## Left and right (outer) joins
+
+*Left and right outer joins* keep all observations on the left-hand or right-hand side data sets respectively. Unmatched rows are filled up with *NA*s:
+
+Syntax: `inner_join(a, b, by = <criterion>)`
+
+![Left and right join. Source: Grolemund, Wickham 2017: R for Data Science](figures/join-leftright.png)
+
+## Inner joins
+
+An *inner join* matches keys that appear in both data sets and returns the combined observations:
+
+![Inner join. Source: Grolemund, Wickham 2017: R for Data Science](figures/join-inner.png)
+
+Syntax: `inner_join(a, b, by = <criterion>)`
+
+## Specifying matching criteria
+
+Parameter `by` can be:
+
+1. a character string specifying the key for both sides, e.g.: `inner_join(pm, city_coords, by = 'city')` will match `city` column in `pm` with `city` column in `city_coords`;
+2. a vector of character strings specifying several keys to match both sides, e.g.: `inner_join(pm, city_coords, by = c('city', 'country')` will match those rows, where `city` *and* `country` columns match;
+3. a *named* character string vector like `inner_join(pm, city_coords, by = c('cityname' = 'id')`, which will match the column `cityname` in `pm` with the column `id` in `city_coords`
+
+
+# Specific hints for excercises
+
+## Exercise 2
+
+## Exercise 3
+
 
 # Sources for geo-data
 
@@ -89,33 +123,3 @@ Geographic areas such as administrative borders change. Identifiers may change, 
 - *Statistisches Bundesamt* also provides an archive
 
 
-# Data linkage with *dplyr*
-
-## Left and right (outer) joins
-
-*Left and right outer joins* keep all observations on the left-hand or right-hand side data sets respectively. Unmatched rows are filled up with *NA*s:
-
-Syntax: `inner_join(a, b, by = <criterion>)`
-
-![Left and right join. Source: Grolemund, Wickham 2017: R for Data Science](figures/join-leftright.png)
-
-## Inner joins
-
-An *inner join* matches keys that appear in both data sets and returns the combined observations:
-
-![Inner join. Source: Grolemund, Wickham 2017: R for Data Science](figures/join-inner.png)
-
-Syntax: `inner_join(a, b, by = <criterion>)`
-
-## Specifying matching criteria
-
-Parameter `by` can be:
-
-1. a character string specifying the key for both sides, e.g.: `inner_join(pm, city_coords, by = 'city')` will match `city` column in `pm` with `city` column in `city_coords`;
-2. a vector of character strings specifying several keys to match both sides, e.g.: `inner_join(pm, city_coords, by = c('city', 'country')` will match those rows, where `city` *and* `country` columns match;
-3. a *named* character string vector like `inner_join(pm, city_coords, by = c('cityname' = 'id')`, which will match the column `cityname` in `pm` with the column `id` in `city_coords`
-
-
-## An example
-
-TODO

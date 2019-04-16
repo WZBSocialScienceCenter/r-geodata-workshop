@@ -14,8 +14,8 @@ pov_risk <- read.delim('tgs00107.tsv', stringsAsFactors = FALSE)
 pov_risk <- gather(pov_risk, 'year', 'risk_pct', -unit.geo.time)
 
 pov_risk <- mutate(pov_risk, nuts = substr(unit.geo.time, 8, 99),
-               year = as.integer(substr(year, 2, 99)),
-               risk_pct = as.numeric(gsub('[^0-9\\.]', '', risk_pct))) %>%
+                             year = as.integer(substr(year, 2, 99)),
+                             risk_pct = as.numeric(gsub('[^0-9\\.]', '', risk_pct))) %>%
             select(nuts, year, risk_pct)
 
 write.csv(pov_risk, 'tgs00107_pov_risk_nuts2.csv', row.names = FALSE)
