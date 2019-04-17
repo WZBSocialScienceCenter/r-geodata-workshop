@@ -228,24 +228,24 @@ eu_pov_plt
 
 ## Exercises 4 and 5 {.even-smaller}
 
-**Choose *one* of the following two tasks (or make both if you like):**
+**Choose *one* of the following two tasks (or make both if you like) and have a look at the handout for further hints:**
 
 **4. A choropleth map of social indicators in Berlin**
 
 - load the CSV file `bln_plr_sozind_data.csv` from folder `4_berlin_sozind`
-    - make sure that the variable `SCHLUESSEL` is loaded as character string, **not** as integer (use `colClasses = c('SCHLUESSEL' = 'character')` in `read.csv()`)
-    - these are the variables in the dataset:<br>
-        STATUS1: Unemployment rate 2016 in percent
-        STATUS2: Long term unemployment rate 2016 in percent<br>
-        STATUS3: Pct. of households that obtain social support ("Hartz IV") 2016<br>
-        STATUS4: Portion of children under 15 living in household that obtains social support ("Hartz IV") 2016<br>
-        DYNAMO1 to 4: Change in the above indicators from the previous year
-- optional: have a look at `bln_plr.geojson` with QGIS
 - load the spatial dataset `bln_plr.geojson` containing the Berlin "Planungsraum" regions
-    - make sure to set the CRS: `st_crs(<DATASET>) <- 25833`
-- join both datasets so that you obtain a combined spatial dataset with the social indicators from `bln_plr_sozind_data.csv` for their respective  regions from `bln_plr.geojson`
+- join both datasets so that you obtain a combined spatial dataset with the social indicators for their respective regions
 - make a simple choropleth map with a social indicator of your choice
-- create a variable with discrete bins from a social indicator of your choice and use this to make a more useful choropleth map
+- make choropleth map of a variable with discrete bins from a social indicator
+
+**5. A choropleth map for unemployment rates in the EU**
+
+- load the CSV file `tgs00010_unempl_nuts2.csv` from folder `5_eu_unempl`
+- create a subset with only the data from 2016 in it and create a variable with discrete bins for `unempl_pct`
+- load the spatial dataset `nutsrg_2_2016_epsg3857_20M.json` containing the EU NUTS level-2 regions
+- join both datasets so that you obtain a combined spatial dataset with the unemployment rates from `tgs00010_unempl_nuts2.csv` for their respective regions in `nutsrg_2_2016_epsg3857_20M.json`
+- make a choropleth map for the total unemployment rate (`sex == 'T'`)
+- optional: make small multiples (via "facetting") by variable `sex`, i.e. displaying choropleth maps for the unemployment rate of women and men next to each other
 
 
 ## Visualizing spatio-temporal data
@@ -391,6 +391,7 @@ register_google(key = google_cloud_api_key)
 
 places <- c('Berlin', 'Leipzig', '10317, Deutschland',
             'Reichpietschufer 50, 10785 Berlin')
+# TODO: uncomment again
 #place_coords <- geocode(places) %>% mutate(place = places)
 #place_coords
 ```
@@ -402,18 +403,230 @@ Take the WZB's geo-coordinates and see if we can find the address to it:
 
 ```{r, message=FALSE}
 # first longitude, then latitude
+# TODO: uncomment again
 #revgeocode(c(13.36509, 52.50640))
 ```
 
 Social media posts or digital photos often contain geo-coordinates that you may want to "reverse geocode".
 
 
-# Making plots publication-ready
+# Making your maps publication-ready
 
 
-## Geographic coordinate systems and projections
+## Map projections {.build}
 
-EPSG
+Can you unroll a cylinder or a cone to a sheet without tearing or stretching?
+
+Yes, easily:
+
+<div style="width:100%">
+<img src="figures/developable_cylinder.jpg" alt="cylinder" style="max-width:50%;float:left">
+<img src="figures/developable_cone.jpg" alt="cone" style="max-width:50%">
+<div style="clear:left;text-align:right"><small>source: [rhino3.de](http://www.rhino3.de/design/modeling/developable/)</small></div>
+</div>
+
+
+## Map projections {.build}
+
+Spheres or ellipsoids cannot be unrolled or unfolded without cutting or stretching. They are "non-developable surfaces".
+
+
+<div class="fullfig">
+  <img src="figures/orangepeel.jpg" alt="Orange peel" style="width:70%"><br>
+  <small>source: [flickr.com/photos/waferboard](https://www.flickr.com/photos/waferboard/45811651315)</small>
+</div>
+
+
+## Coordinate reference systems (again) and projections {.build .smaller}
+
+Map projections try to do the impossible: project points on a sphere¹ to a plane.
+
+- we already worked with WGS84 coordinates, which are locations on a sphere¹ defined as degrees
+    - *-73.94°* is the **longitude**: about 74° West from the <span style="color:blue">meridian</span>
+    - *40.6°* is the **latitude**:  about 41° North from the <span style="color:green">equator</span>
+- points from spherical/ellipsoidal coordinate system are converted to a "flat surface" cartesian coordinate system via a **map projection**
+- a coordinate reference system (CRS) can define a specific **map projection**
+
+<small>¹ WGS84 actually models the Earth as ellipsoid</small>
+
+
+## Map projections {.build}
+
+**All map projections distort:** area, shape, direction, distance and other properties can be different than on the actual sphere.
+
+<div class="fullfig">
+  <img src="figures/orangepeel.jpg" alt="Orange peel" style="width:40%"><br>
+  <small>source: [flickr.com/photos/waferboard](https://www.flickr.com/photos/waferboard/45811651315)</small>
+</div>
+
+There are numerous projections, each with different properties and trade-offs between distortions.
+
+## Example projections {.smaller}
+
+**Mercator projection**
+
+<div class="fullfig">
+  <img src="figures/Mercator_projection_SW.jpg" alt="Meractor projection" style="width:50%"><br>
+  <small>source: [Strebe / wikipedia commons](https://commons.wikimedia.org/wiki/File:Mercator_projection_SW.jpg)</small>
+</div>
+
+- very popular
+- strong distortions when far away from equator (Scandinavia, Antarctica, etc.)
+
+
+## Example projections {.smaller}
+
+**Mollweide projection**
+
+<div class="fullfig">
+  <img src="figures/Mollweide_projection_SW.jpg" alt="Mollweide projection" style="width:80%"><br>
+  <small>source: [Strebe / wikipedia commons](https://en.wikipedia.org/wiki/File:Mollweide_projection_SW.jpg)</small>
+</div>
+
+- equal-area projection
+- shape distortions when far away from center
+
+
+## Example projections {.smaller}
+
+**Goode homolosine projection**
+
+<div class="fullfig">
+  <img src="figures/Goode_homolosine_projection_SW.jpg" alt="Goode projection" style="width:90%"><br>
+  <small>source: [Strebe / wikipedia commons](https://commons.wikimedia.org/wiki/File:Goode_homolosine_projection_SW.jpg)</small>
+</div>
+
+- equal-area projection
+- no distortion around equator
+- looks a bit like the peeled orange
+
+## Why should I even care?
+
+- spatial datasets usually specify the CRS &rarr; you should be able to set or transform it<br><br>
+- you may want to use a different projection, because:
+    - a different projection gives less distortion in the area of your interest (many historical projections a Euro-centric)
+    - inequal area projections give too much visual weight on certain regions (i.e. Northern and Southern regions in Mercator projection)<br><br>
+- compatibility between datasets matters (e.g. country shapes in specific CRS, but geo-coded points as WGS84 coordinates)
+
+## Why should I even care? {.smaller .build}
+
+```{r, warning=FALSE, message=FALSE, include=FALSE}
+library(rnaturalearth)
+worldmap_data <- ne_countries(type = 'map_units', returnclass = 'sf')
+```
+
+
+<div style="float:left;width:50%">
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=3.8}
+disp_window <- st_sfc(st_point(c(-20, 30)), st_point(c(45, 73)), crs = 4326)
+disp_window_mercator <- st_transform(disp_window, crs = 3395)
+disp_window_mercator_coord <- st_coordinates(disp_window_mercator)
+
+ggplot() + geom_sf(data = worldmap_data) +
+    coord_sf(crs = 3395, datum = 3395,
+             xlim = disp_window_mercator_coord[,'X'],
+             ylim = disp_window_mercator_coord[,'Y'],
+             expand = FALSE) +
+    ggtitle('Mercator projection') +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+</div>
+<div style="float:left;width:50%">
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=3.8}
+disp_window <- st_sfc(st_point(c(-12, 27)), st_point(c(60, 65)), crs = 4326)
+disp_window_etrs89 <- st_transform(disp_window, crs = 25833)
+disp_window_etrs89_coord <- st_coordinates(disp_window_etrs89)
+
+ggplot() + geom_sf(data = worldmap_data) +
+    coord_sf(crs = 25833, datum = 25833,
+             xlim = disp_window_etrs89_coord[,'X'],
+             ylim = disp_window_etrs89_coord[,'Y']) +
+    ggtitle('ETRS89 projection') +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+</div>
+
+<div style="clear:both">
+- ETRS89 projection is especially for (central) Europe
+- look at the axis: units are meters, not degrees!
+</div>
+
+## Finding out the CRS {.smaller .build}
+
+The CRS of a spatial dataset is usually documented as **EPSG / SRID number**. [epsg.io](http://epsg.io) provides information about all common CRS.<br>
+When you load a spatial dataset you can see its CRS / projection:
+
+```{r}
+worldmap_data <- st_as_sf(map('world', plot = FALSE, fill = TRUE))
+head(worldmap_data, n=2)
+```
+
+Alternatively, use `st_crs()`:
+
+```{r}
+st_crs(worldmap_data)
+```
+
+
+## Setting a CRS {.smaller .build}
+
+Often, the CRS is not set in the spatial dataset, so you have to do it manually:
+
+```{r}
+bln_plan <- read_sf('data/Planungsraum_EPSG_25833.shp')
+head(bln_plan, n=2)
+```
+
+The documentation (and the file name) say it's [EPSG 25833](http://epsg.io/25833):
+
+```{r}
+st_crs(bln_plan) <- 25833
+```
+
+## Setting a CRS {.smaller .build}
+
+Note that by default, ggplot displays lines ("graticules") and axes according to WGS84 coordinates, although the actual data uses a different CRS:
+
+```{r, fig.height=4, fig.align='center'}
+ggplot() + geom_sf(data = bln_plan)
+```
+
+
+## Setting a CRS {.smaller}
+
+Setting the `datum` to the same CRS in `coord_sf` shows axis with the same units as in the data:
+
+```{r, fig.height=4, fig.align='center'}
+ggplot() + geom_sf(data = bln_plan) + coord_sf(datum = 25833)
+```
+
+
+## Transforming the CRS {.smaller .build}
+
+Suppose we wanted to make some markers on the Berlin map. We obtained longitude/latitude coordinates for them, e.g. for the WZB:
+
+```{r, fig.height=4, fig.align='center'}
+wzb_coord <- data.frame(lng = 13.365097, lat = 52.506459)
+ggplot() + geom_sf(data = bln_plan) +
+    geom_point(aes(x = lng, y = lat), data = wzb_coord, color = 'red')
+```
+
+## Transforming the CRS {.smaller .build}
+
+Oops! What happened here?
+
+The spatial data for Berlin has a different CRS, it doesn't use WGS84 longitude/latitude coordinates. We have to convert the WZB coordinates to the same CRS (EPSG 25833) via `st_transform()`:
+
+
+```{r, fig.height=3.5, fig.align='center'}
+wzb_wgs84 <- st_sfc(st_point(c(wzb_coord$lng, wzb_coord$lat)), crs = 4326)
+wzb_etrs89 <- as.data.frame(st_coordinates(st_transform(wzb_wgs84, 25833)))
+ggplot() + geom_sf(data = bln_plan) +
+    geom_point(aes(x = X, y = Y), data = wzb_etrs89, color = 'red')
+```
+
 
 ## Setting the display window
 
@@ -429,10 +642,15 @@ EPSG
 - st_centroid
 - col_bind
 
+## Exercise 6
+
+
+
 ## Further reading
 
 - sf vignette
 - https://cran.r-project.org/web/views/Spatial.html
 - https://geocompr.robinlovelace.net/
+- http://www.radicalcartography.net/?projectionref
 - ggplot2
 

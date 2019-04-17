@@ -27,7 +27,7 @@ set.seed(10042019)
 <li>A short introduction to data linkage with *dplyr*</li>
 <li>Combining data and making a *choropleth map*</li>
 <li>Geocoding and reverse geocoding via Google Maps API</li>
-<li>Making plots publication-ready</li>
+<li>Making your maps publication-ready</li>
 </ol>
 
 # Introduction
@@ -201,11 +201,12 @@ ggplot() + geom_sf(data = nyc, color = 'red', size = 3) +
     theme_bw()
 ```
 
-- the point *-73.94°, 40.6°* is represented in the *WGS84* CRS: most popular world coord. system (e.g. used by GPS)
-- this CRS is ellipsoidal; its components are given in degrees:
+- the point *-73.94°, 40.6°* is represented in the *WGS84* CRS: the world geodetic system (e.g. used by GPS)
+- points describe location on a sphere¹; its components are given in degrees:
     - *-73.94°* is the **longitude**: about 74° West from the <span style="color:blue">meridian</span>
     - *40.6°* is the **latitude**:  about 41° North from the <span style="color:green">equator</span>
 
+<small>¹ WGS84 actually models the Earth as ellipsoid</small>
 
 ## Coordinate reference systems in brief {.smaller .build}
 

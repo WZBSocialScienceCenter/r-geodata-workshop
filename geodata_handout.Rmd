@@ -48,11 +48,45 @@ Parameter `by` can be:
 3. a *named* character string vector like `inner_join(pm, city_coords, by = c('cityname' = 'id')`, which will match the column `cityname` in `pm` with the column `id` in `city_coords`
 
 
-# Specific hints for excercises
+# Specific hints / further information for excercises
 
 ## Exercise 2
 
 ## Exercise 3
+
+## Exercise 4
+
+When loading the `bln_plr_sozind_data.csv` dataset, make sure that the variable `SCHLUESSEL` is loaded as character string, **not** as integer (use `colClasses = c('SCHLUESSEL' = 'character')` in `read.csv()`).
+
+After loading the spatial dataset `bln_plr.geojson` make sure to set the CRS: `st_crs(<DATASET>) <- 25833`.
+
+More information on the `bln_plr_sozind_data.csv` dataset:
+
+- source: Berlin Senate Dept. for Urban Dev. and Housing, *Monitoring Soziale Stadtentwicklung 2017* via [FIS-Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
+- variables:<br>
+    `STATUS1`: Unemployment rate 2016 in percent<br>
+    `STATUS2`: Long term unemployment rate 2016 in percent<br>
+    `STATUS3`: Pct. of households that obtain social support ("Hartz IV") 2016<br>
+    `STATUS4`: Portion of children under 15 living in household that obtains social support ("Hartz IV") 2016<br>
+    `DYNAMO1` to `4`: Change in the above indicators from the previous year
+
+## Exercise 5
+
+After loading the spatial dataset `nutsrg_2_2016_epsg3857_20M.json` make sure to set the CRS: `st_crs(<DATASET>) <- 3857`.
+
+More information on the `tgs00010_unempl_nuts2.csv` dataset:
+
+- source: [Eurostats / Regions & cities](https://ec.europa.eu/eurostat/web/regions/data/main-tables)
+- variables:<br>
+    `sex`: `F` means unemployment rate for women, `M` for men, `T` for both<br>
+    `nuts`: NUTS level-2 region code<br>
+    `year`: year when the data was collected<br>
+    `unempl_pct`: unemployment rate in percent
+
+In case you want to use a different Eurostats dataset or a different NUTS map, you can download these resources here:
+
+- for the datasets: https://ec.europa.eu/eurostat/data/browse-statistics-by-theme
+- for the NUTS maps: https://github.com/eurostat/Nuts2json
 
 
 # Sources for geo-data
