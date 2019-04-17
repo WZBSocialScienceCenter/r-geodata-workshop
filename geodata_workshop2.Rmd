@@ -10,7 +10,7 @@ output:
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(R.options = list(max.print = 50))
+knitr::opts_chunk$set(R.options = list(max.print = 30))
 set.seed(10042019)
 
 source('apikeys.R')
@@ -422,7 +422,7 @@ Yes, easily:
 <div style="width:100%">
 <img src="figures/developable_cylinder.jpg" alt="cylinder" style="max-width:50%;float:left">
 <img src="figures/developable_cone.jpg" alt="cone" style="max-width:50%">
-<div style="clear:left;text-align:right"><small>source: [rhino3.de](http://www.rhino3.de/design/modeling/developable/)</small></div>
+<div style="clear:left"><small>source: [rhino3.de](http://www.rhino3.de/design/modeling/developable/)</small></div>
 </div>
 
 
@@ -628,15 +628,62 @@ ggplot() + geom_sf(data = bln_plan) +
 ```
 
 
-## Setting the display window
+## Setting the display window {.build}
+
+You may only want to show a portion of your spatial data, i.e. "zoom in" to a certain area on the map.
+
+We use spatial data for all countries from the `rnaturalearth` package:
+
+```{r}
+worldmap <- ne_countries(type = 'map_units', returnclass = 'sf')
+```
+
+## Using a subset of the data {.smaller .build}
+
+One way to "zoom in" is to form a subset of your data, e.g:
+
+```{r, fig.height=1.8, fig.width=5, fig.align='center'}
+europe <- worldmap[worldmap$continent == 'Europe',]
+ggplot() + geom_sf(data = europe)
+```
+
+However, this has some disadvantages:
+
+- you probably wouldn't want to show whole Russia
+- nearby countries are not shown (e.g. Turkey, Northern Africa)
+
+## Limiting the display window {.smaller .build}
+
+We can also use the whole dataset, but set limits on the display window via `coord_sf()` **using the current CRS unit** (here: degrees longitude/latitude):
+
+- `xlim` are the bounds for the x-axis 
+- `ylim` are the bounds for the y-axis
+
+Using the default Mercator projection (not appropriate for this region):
+
+```{r, fig.height=3, fig.align='center'}
+ggplot() + geom_sf(data = worldmap) +
+    coord_sf(xlim = c(-20, 45), ylim = c(30, 73))
+```
+
+
+## Cutting the shapes {.smaller .build}
+
+We can also "cut" the shapes to fit into the specified display window using `st_crop`:
+
+To better see the effect, I'm showing the result in ETRS89 projection **after** the shapes have been cut:
+
+```{r, fig.height=4, fig.align='center', warning=FALSE, message=FALSE}
+europe <- st_crop(worldmap, xmin = -20, xmax = 45, ymin = 30, ymax = 73)
+ggplot() + geom_sf(data = europe) + coord_sf(crs = 25833)
+```
+
 
 ## Finding centroids of regions
 
 ## Labelling regions
 
 ## Labelling regions without occlusion
-
-- coord_sf / st_crop
 
 - labels:
 - st_centroid
