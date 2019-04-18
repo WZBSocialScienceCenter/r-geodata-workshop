@@ -738,13 +738,19 @@ ggplot() + geom_sf(data = world_etrs89) +
 
 ## Exercise 6
 
+Take one of your previous plots and improve it by:
+
+- choosing a different projection
+- choosing a different display window (i.e. "zooming in" to a certain region)
+- selecting certain regions (e.g. those with extreme values) and displaying labels for them
 
 
 ## Further reading
 
-- sf vignette
-- https://cran.r-project.org/web/views/Spatial.html
-- https://geocompr.robinlovelace.net/
-- http://www.radicalcartography.net/?projectionref
-- ggplot2
+- [Lovelace et al. 2019: Geocomputation with R](https://geocompr.robinlovelace.net/) (available online for free)
+- [CRAN Task View: Analysis of Spatial Data](https://cran.r-project.org/web/views/Spatial.html): gives an overview about available R packages for working with spatial data
+- [Simple Features for R](https://cran.r-project.org/web/packages/sf/vignettes/sf1.html) and other vignettes on the [CRAN page for `sf`](https://cran.r-project.org/web/packages/sf/index.html)
+- [ggplot2: Visualise sf objects](https://ggplot2.tidyverse.org/reference/ggsf.html)
+- [radical cartography: overview about projections](http://www.radicalcartography.net/?projectionref)
+
 

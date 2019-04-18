@@ -162,6 +162,8 @@ AGS
 
 CRS
 
+CRAN
+
 EPSG
 
 ETRS89
