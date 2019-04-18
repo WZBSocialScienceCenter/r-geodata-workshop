@@ -4,22 +4,33 @@ subtitle: "NaWi-Workshop: Obtaining, linking and plotting geographic data"
 author: "Markus Konrad <markus.konrad@wzb.eu>"
 date: "May 6, 2019"
 output: 
-  html_document: 
-    fig_caption: yes
-    toc: yes
   pdf_document: 
     fig_caption: yes
     fig_height: 3
     fig_width: 4
+    toc_depth: 2
   word_document: 
     fig_caption: yes
     toc: yes
+    toc_depth: 2
+  html_document: 
+    fig_caption: yes
+    toc: yes
+    toc_depth: 2
 ---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(R.options = list(max.print = 30))
+set.seed(10042019)
+library(ggplot2)
+```
 
 
 # Plotting with *ggplot2*
 
 TODO
+
+https://r4ds.had.co.nz/data-visualisation.html
 
 # Data linkage with *dplyr*
 
@@ -52,7 +63,70 @@ Parameter `by` can be:
 
 ## Exercise 2
 
+### Finding out geo-coordinates
+
+We will later learn how to use the Google Maps API to geocode (i.e. get the geo-coordinates) places programmatically. For the purpose of this excerise, it's enough to do it manually.
+
+There are several websites that offer free manual geocoding, e.g.:
+
+- https://google-developers.appspot.com/maps/documentation/utils/geocoder/
+- https://www.mapdevelopers.com/geocode_tool.php
+
+Both work the same way: You enter a request (i.e. an address, city name, restaurant name, etc.) and it spits out the result, including the longitude and latitude. **Please be aware that the first service returns the geo-coordinate with latitude first, followed by longitude ("Location: ...").**
+
+### Constructing a dataset quickly from within R
+
+You can construct the small dataset directly within R, by passing place labels, longitude and latitudes as separate column vectors:
+
+```{r, eval=FALSE}
+places <- data.frame(
+    label = c('born', 'living', 'neven been there'),
+    lng = c(  12.590, 13.402,   8.0456),
+    lat = c(  51.279, 52.520,   52.276)
+)
+```
+
+### Loading the worldmap dataset
+
+The following loads the world map dataset from the `maps` package as *Simple Features* spatial dataset:
+
+```{r, message=FALSE, warning=FALSE}
+library(maps)
+library(sf)
+
+worldmap_data <- st_as_sf(map('world', plot = FALSE, fill = TRUE))
+```
+
+
+### Filtering the worldmap dataset
+
+You can filter the worldmap data from the `maps` package by using the "ID" column:
+
+```{r, eval=FALSE}
+sweden <- worldmap_data[worldmap_data$ID == 'Sweden',]
+```
+
+Using the `%in%` operator when selecting several countries:
+
+```{r, eval=FALSE}
+scandinavia <- worldmap_data[worldmap_data$ID %in% c('Sweden', 'Denmark', 'Finland',
+                                                     'Norway', 'Iceland'),]
+```
+
+
+### Restricting the display window
+
+You can specify a "display window" (i.e. "zooming in" to a certain region) by setting a limit on the displayed longitude range (`xlim`) and latitude range (`ylim`) in the `coord_sf()` function:
+
+```{r}
+ggplot() + geom_sf(data = worldmap_data) + coord_sf(xlim = c(-20, 50), ylim = c(30, 70))
+```
+
+We will learn more options on how to specify display windows in the second part of the workshop.
+
 ## Exercise 3
+
+
 
 ## Exercise 4
 
@@ -63,12 +137,12 @@ After loading the spatial dataset `bln_plr.geojson` make sure to set the CRS: `s
 More information on the `bln_plr_sozind_data.csv` dataset:
 
 - source: Berlin Senate Dept. for Urban Dev. and Housing, *Monitoring Soziale Stadtentwicklung 2017* via [FIS-Broker](https://fbinter.stadt-berlin.de/fb/index.jsp)
-- variables:<br>
-    `STATUS1`: Unemployment rate 2016 in percent<br>
-    `STATUS2`: Long term unemployment rate 2016 in percent<br>
-    `STATUS3`: Pct. of households that obtain social support ("Hartz IV") 2016<br>
-    `STATUS4`: Portion of children under 15 living in household that obtains social support ("Hartz IV") 2016<br>
-    `DYNAMO1` to `4`: Change in the above indicators from the previous year
+- variables:
+    - `STATUS1`: Unemployment rate 2016 in percent
+    - `STATUS2`: Long term unemployment rate 2016 in percent
+    - `STATUS3`: Pct. of households that obtain social support ("Hartz IV") 2016
+    - `STATUS4`: Portion of children under 15 living in household that obtains social support ("Hartz IV") 2016
+    - `DYNAMO1` to `4`: Change in the above indicators from the previous year
 
 ## Exercise 5
 
@@ -77,11 +151,11 @@ After loading the spatial dataset `nutsrg_2_2016_epsg3857_20M.json` make sure to
 More information on the `tgs00010_unempl_nuts2.csv` dataset:
 
 - source: [Eurostats / Regions & cities](https://ec.europa.eu/eurostat/web/regions/data/main-tables)
-- variables:<br>
-    `sex`: `F` means unemployment rate for women, `M` for men, `T` for both<br>
-    `nuts`: NUTS level-2 region code<br>
-    `year`: year when the data was collected<br>
-    `unempl_pct`: unemployment rate in percent
+- variables:
+    - `sex`: `F` means unemployment rate for women, `M` for men, `T` for both
+    - `nuts`: NUTS level-2 region code
+    - `year`: year when the data was collected
+    - `unempl_pct`: unemployment rate in percent
 
 In case you want to use a different Eurostats dataset or a different NUTS map, you can download these resources here:
 
@@ -97,8 +171,8 @@ The following packages come directly with geo-data or provide means to download 
 
 - [maps](https://cran.r-project.org/web/packages/maps/index.html): World, USA, US states, US counties and more
 - [mapdata](https://cran.r-project.org/web/packages/mapdata/index.html): World in higher resolution, China, Japan and more
-- [rnaturalearth](https://cran.r-project.org/web/packages/rnaturalearth/index.html): *R package to hold and facilitate interaction with natural earth vector map data.* &rarr; see next slides
-- [OpenStreetMap](https://cran.r-project.org/web/packages/OpenStreetMap/): Access to the OpenStreetMap API &rarr; see next slides
+- [rnaturalearth](https://cran.r-project.org/web/packages/rnaturalearth/index.html): *R package to hold and facilitate interaction with natural earth vector map data.* → see next slides
+- [OpenStreetMap](https://cran.r-project.org/web/packages/OpenStreetMap/): Access to the OpenStreetMap API → see next slides
 
 
 ## Natural Earth Data
@@ -158,32 +232,31 @@ Geographic areas such as administrative borders change. Identifiers may change, 
 
 # Glossary
 
-AGS
+**AGS:** *Amtlicher Gemeindeschlüssel* – municipality identificator in Germany.
 
-CRS
+**CRS:** Coordinate reference system – defines the coordinate system (spherical, ellipsoid, cartesian, etc.), unit of measurment (degrees, meters, etc.) and map projection of points in a spatial dataset in order to locate geographical entities
 
-CRAN
+**CRAN:** *Comprehensive R Archive Network* – repository of packages that extend the statistical software suite R.
 
-EPSG
+**EPSG:** *European Petroleum Survey Group* – a scientific organization tied to European petroleum industry. Created the *EPSG Geodetic Parameter Set*, which among other things contains a database of →CRS identified by EPSG →SRID code
 
-ETRS89
+**ETRS89:** *European Terrestrial Reference System 1989* – EU-recommended frame of reference for geodata for Europe; defines a →CRS.
 
-GIS
+**GIS:** *Geographic information system* – a system such as a software like →QGIS designed to work with geographic data.
 
-GPS
+**Lat / Latitude:** Geographic coordinate that defines the north-south position of a point on Earth as an angle between -90° (south pole) and 90° (north pole). The equator is located at 0° latitude.
 
-Lat / Latitude
+**Lon / Long / Lng / Longitude:** Geographic coordinate that defines the east-west position of a point on Earth as an angle between -180° (westward) and 180° (eastward). The Prime Meridian is located at 0° longitude.
 
-Lon / Long / Lng / Longitude
+**LOR:** *Lebensweltlich orientierte Räume* – structures the city area of Berlin into sub-regions at three different levels; each area is identified by a LOR code.
 
-LOR
+**NUTS:** *Nomenclature of Territorial Units for Statistics* – divides the EU territory into regions at 3 different levels for socio-economic analyses of the regions; each area is identified by a NUTS code.
 
-NUTS
+**QGIS:** free and open-source →GIS application.
 
-QGIS
+**SRID:** *Spatial Reference System Identifier* – identifies a →CRS by a unique code number which is listed in the →EPSG database. Because of this, it is often also called EPSG code or number. Examples: EPSG:4326 refers to →WGS84; EPSG:4258 refers to →ETRS89.
 
-SRID
+**SRS:** *Spatial Reference System* – see →CRS.
 
-SRS
+**WGS84:** *World Geodetic System 1989* – defines a →CRS at global scale. Coordinates are defined  in degrees as →longitude and →latitude.
 
-WGS84

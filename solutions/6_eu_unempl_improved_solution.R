@@ -30,7 +30,7 @@ nutsrg <- read_sf('nutsrg_2_2016_epsg3857_20M.json')
 st_crs(nutsrg) <- 3857  # set the proper CRS
 
 # now transform it to ETRS89
-nutsrg <- st_transform(nutsrg, crs = 25833)
+nutsrg <- st_transform(nutsrg, crs = 4258)
 
 # combine spatial dataset and unemployment dataset using by matching "id" from "nutsrg"
 # to "nuts" from "unempl2016"
@@ -65,11 +65,11 @@ unempl_extremes
 
 # "zoom in" to central / south Europe as all extreme regions are located there
 # display window coordinates are specified as two points in WGS84: bottom left and top right
-disp_window <- st_sfc(st_point(c(-12, 28)), st_point(c(55, 50)), crs = 4326)
+disp_window <- st_sfc(st_point(c(-12, 31)), st_point(c(50, 55)), crs = 4326)
 
 # convert the WGS84 coord. of the display window to ETRS89 coordinates so
 # that it matches the CRS of our datasets
-disp_window_etrs89 <- st_transform(disp_window, crs = 25833)
+disp_window_etrs89 <- st_transform(disp_window, crs = 4258)
 disp_window_etrs89_coord <- st_coordinates(disp_window_etrs89)
 
 # make a choropleth map from this data
