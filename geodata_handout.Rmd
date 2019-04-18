@@ -156,4 +156,32 @@ Geographic areas such as administrative borders change. Identifiers may change, 
 - *Eurostat* provides historical NUTS areas back to 2003
 - *Statistisches Bundesamt* also provides an archive
 
+# Glossary
 
+AGS
+
+CRS
+
+EPSG
+
+ETRS89
+
+GIS
+
+GPS
+
+Lat / Latitude
+
+Lon / Long / Lng / Longitude
+
+LOR
+
+NUTS
+
+QGIS
+
+SRID
+
+SRS
+
+WGS84

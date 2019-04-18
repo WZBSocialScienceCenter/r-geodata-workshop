@@ -396,10 +396,7 @@ ggplot() +
     scale_size_continuous(guide = 'none') +
     scale_fill_discrete(guide = 'none') +
     scale_color_discrete(guide = 'none') +
-    theme_bw() +
-    theme(axis.text = element_blank(),
-          axis.title = element_blank(),
-          axis.ticks = element_blank())
+    theme_void()
 ```
 
 

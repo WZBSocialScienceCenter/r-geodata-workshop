@@ -167,8 +167,7 @@ ggplot() + geom_sf(aes(fill = child_pov_bins), data = bln_sozind) +
     scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
                       guide = guide_legend(title = 'Child pov.\nranges in pct.')) +
     coord_sf(datum = NA) +  # disable lines ("graticules") in the background
-    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
-                       axis.ticks = element_blank())
+    theme_void()
 ```
 
 ## Combining data {.smaller .build}
@@ -549,7 +548,7 @@ ggplot() + geom_sf(data = worldmap_data) +
 </div>
 
 <div style="clear:both">
-- ETRS89 projection is especially for (central) Europe
+- ETRS89 projection is especially for (central) Europe: less distorted here
 - look at the axis: units are meters, not degrees!
 </div>
 
@@ -579,7 +578,7 @@ bln_plan <- read_sf('data/Planungsraum_EPSG_25833.shp')
 head(bln_plan, n=2)
 ```
 
-The documentation (and the file name) say it's [EPSG 25833](http://epsg.io/25833):
+The documentation (and the file name) say it's [EPSG 25833](http://epsg.io/25833), a CRS known as *ETRS89*:
 
 ```{r}
 st_crs(bln_plan) <- 25833
@@ -617,12 +616,12 @@ ggplot() + geom_sf(data = bln_plan) +
 
 Oops! What happened here?
 
-The spatial data for Berlin has a different CRS, it doesn't use WGS84 longitude/latitude coordinates. We have to convert the WZB coordinates to the same CRS (EPSG 25833) via `st_transform()`:
+The spatial data for Berlin has a different CRS, it doesn't use WGS84 longitude/latitude coordinates. We have to convert the WZB coordinates to the same CRS (EPSG 25833 aka ETRS89) via `st_transform()`:
 
 
 ```{r, fig.height=3.5, fig.align='center'}
 wzb_wgs84 <- st_sfc(st_point(c(wzb_coord$lng, wzb_coord$lat)), crs = 4326)
-wzb_etrs89 <- as.data.frame(st_coordinates(st_transform(wzb_wgs84, 25833)))
+wzb_etrs89 <- as.data.frame(st_coordinates(st_transform(wzb_wgs84, crs = 25833)))
 ggplot() + geom_sf(data = bln_plan) +
     geom_point(aes(x = X, y = Y), data = wzb_etrs89, color = 'red')
 ```
@@ -679,15 +678,63 @@ ggplot() + geom_sf(data = europe) + coord_sf(crs = 25833)
 ```
 
 
-## Finding centroids of regions
+## Finding centroids of regions {.smaller .build}
 
-## Labelling regions
+Sometimes you need to find the center point *(centroid)* of certain regions. Example: you want to annotate a map with labels for certain countries. You can't directly label a country, because it is represented as a polygon but you need a discrete point for labelling. You can find the centroid for a shape with `st_centroid`.
 
-## Labelling regions without occlusion
+- `st_centroid` doesn't work correctly with longitude/latitude &rarr; need to convert to a CRS that uses meters, such as ETRS89
+- we select 5 countries
+- we calculate the centroid points from the countries' `geometry` and get their coordinates (they are also in ETRS89)
 
-- labels:
-- st_centroid
-- col_bind
+```{r}
+world_etrs89 <- st_transform(worldmap, crs = 25833)
+countries <- world_etrs89[world_etrs89$iso_a2 %in% c('SK', 'FR', 'TR', 'PL', 'CZ'),]
+country_centroids <- st_coordinates(st_centroid(countries$geometry))
+country_centroids
+```
+
+
+## Labelling regions {.smaller .build}
+
+We can use those coordinates for labelling the countries. First we combine the country names and their centroid coordinates:
+
+```{r}
+country_labels <- cbind(select(countries, name), country_centroids)
+country_labels
+```
+
+## Labelling regions {.smaller .build}
+
+Now we can use `geom_sf_label` to display the labels. We pass the `country_labels` dataset and map its `name` variable to the `label`.<br>
+Note how I define a display window in WGS84 longitudes/latitudes and convert it to ETRS89, as this is the CRS of the spatial datasets that are plotted.
+
+```{r, fig.height=2.5, fig.align='center', warning=FALSE, message=FALSE}
+disp_window <- st_sfc(st_point(c(-12, 28)), st_point(c(60, 64)), crs = 4326)
+disp_window_etrs89 <- st_transform(disp_window, crs = 25833)
+disp_window_etrs89_coord <- st_coordinates(disp_window_etrs89)
+ggplot() + geom_sf(data = world_etrs89) +
+    geom_sf_label(aes(label = name), data = country_labels) +
+    coord_sf(xlim = disp_window_etrs89_coord[,'X'],
+             ylim = disp_window_etrs89_coord[,'Y'], datum = NA) +
+    theme_void()
+```
+
+
+## Labelling regions without occlusion {.smaller .build}
+
+Labels close to each other will cause occlusion. The package `ggrepel` contains a function `geom_label_repel` that tries to place labels without occlusion. We map the `x`, `y` and `label` with the respective columns from the `country_labels` dataset:
+
+
+```{r, fig.height=3, fig.align='center', warning=FALSE, message=FALSE}
+library(ggrepel)
+ggplot() + geom_sf(data = world_etrs89) +
+    geom_label_repel(aes(x = X, y = Y, label = name),
+                     data = country_labels, min.segment.length = 0) +
+    coord_sf(xlim = disp_window_etrs89_coord[,'X'],
+             ylim = disp_window_etrs89_coord[,'Y'], datum = NA) +
+    theme_void()
+```
+
 
 ## Exercise 6
 
