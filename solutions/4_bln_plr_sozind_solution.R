@@ -7,6 +7,7 @@ library(dplyr)
 library(sf)
 
 # load social indicators data
+# make sure that your working directory is set to where this file resides
 # this is what the columns mean:
 # STATUS1: Unemployment rate 2016 in percent
 # STATUS2: Long term unemployment rate 2016 in percent
@@ -17,6 +18,7 @@ sozind <- read.csv('bln_plr_sozind_data.csv', stringsAsFactors = FALSE,
                    colClasses = c('SCHLUESSEL' = 'character'))
 
 # load the spatial dataset containing the "Planungsraum" regions and their ID ("SCHLUESSEL")
+# make sure that your working directory is set to where this file resides
 bln_plr_geo <- read_sf('bln_plr.geojson')
 st_crs(bln_plr_geo) <- 25833   # CRS must be set
 

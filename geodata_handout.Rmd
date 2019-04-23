@@ -4,33 +4,157 @@ subtitle: "NaWi-Workshop: Obtaining, linking and plotting geographic data"
 author: "Markus Konrad <markus.konrad@wzb.eu>"
 date: "May 6, 2019"
 output: 
-  pdf_document: 
+  html_document: 
     fig_caption: yes
-    fig_height: 3
-    fig_width: 4
+    toc: yes
     toc_depth: 2
   word_document: 
     fig_caption: yes
     toc: yes
     toc_depth: 2
-  html_document: 
+  pdf_document: 
     fig_caption: yes
-    toc: yes
+    fig_height: 3
+    fig_width: 4
     toc_depth: 2
 ---
 
 ```{r, include=FALSE}
-knitr::opts_chunk$set(R.options = list(max.print = 30))
+knitr::opts_chunk$set(R.options = list(max.print = 50))
 set.seed(10042019)
-library(ggplot2)
 ```
 
 
 # Plotting with *ggplot2*
 
-TODO
+The following will only a cover some basic explanations and recipes. I will only show scatterplots as examples, but the basic concepts can be applied to all other kinds of plots. Specifically, geographic plots with `geom_sf()` work in a very similar fashion, only that the coordinate system usually uses geo-locations in longitude / latitude degrees on the x- and y-axis.
 
-https://r4ds.had.co.nz/data-visualisation.html
+For more a more thorough introduction to ggplot2, see [chapter 3 in "R for Data Science"](https://r4ds.had.co.nz/data-visualisation.html).
+
+## An example dataset
+
+We'll use the built-in `airquality` dataset:
+
+```{r}
+head(airquality)
+```
+
+In its very essence, you make a plot by:
+
+1. setting the dataset to use for plotting
+2. specifying an ***aesthetics* mapping** that defines which visual properties of the plot are controlled by which variables in your dataset (e.g. variable `Temp` is mapped to the x-coordinate in your plot, `Ozone` is mapped to the y-coordinate)
+3. setting a graphical primitive (e.g. a line, points, etc.) to use for plotting one layer of the data; this is called a ***geom***; you may add several layers of different graphical primitives to your plot, e.g. a layer for a line showing a trend and a layer of points that display the individual data points
+
+The first two steps can be done by using the `ggplot()` function. It accepts the dataset to use and an aesthetic mapping which is defined in the function `aes()`. You then add a layer of points via the *geom*-function `geom_point()`.
+
+An example of a scatterplot of `Ozone` on the y-axis against `Temp` on the x-axis:
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+library(ggplot2)
+
+ggplot(airquality, aes(x = Temp, y = Ozone)) + geom_point()
+```
+
+Be aware that the dataset and the mapping that you pass to `ggplot()` affects all layers unless they define their own data to use and/or aesthetic mapping. For example, we could also refrain from setting a dataset and aesthetic mapping in the `ggplot()` function and instead create two layers of points, each using a different dataset and aesthetic mapping:
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+random_data <- data.frame(rand_x = rnorm(10, mean = 75, sd = 20),
+                          rand_y = rnorm(10, mean = 100, sd = 30))
+
+ggplot() +
+    geom_point(aes(x = Temp, y = Ozone), data = airquality) +
+    geom_point(aes(x = rand_x, y = rand_y), color = 'red', data = random_data)
+```
+
+The first `geom_point()`-layer creates points for the `airquality` data just like before. The second layer uses a dataset with randomly generated values `rand_x` and `rand_y`. Additionally, the color for those points is set to red.
+
+You can see that `geom_point()` has several visual properties (i.e. "aesthetics"): The position on the x and y scale; the color of the points. Some of these properties, like x and y position, are *required*. They must be mapped to a variable or set to a static value, because otherwise you can't draw a point. Others, like `color` are optional and they have reasonable default values. All aesthetics can be mapped to a variable, so we can also map `color` to a variable (note that the variable is converted to an ordered factor, because otherwise the color would be on a continuous scale):
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+# here we only pass the dataset to ggplot() and define the aesthetic mapping in the geom layer
+ggplot(airquality) +
+    geom_point(aes(x = Temp, y = Ozone, color = as.ordered(Month)))
+```
+
+
+In order to find out which visual properties of a geom can be controlled, you can use the help document of the respective function, e.g. `?geom_point` or `?geom_line` and have a look at the section "Aesthetics".
+
+*Overplotting* can easily occur, especially with large data sets.
+
+- happens when multiple data points are drawn on the same spot
+- fix it with setting a semi-transparent fill color or apply *jittering*
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+ggplot(airquality, aes(x = Temp, y = Ozone)) +
+  geom_point(alpha = 0.33)  # alpha of 0 is invisible, 1 is opaque
+```
+
+## Scales
+
+Each visual property that a variable maps to, belongs to a scale that you can further adjust. For example, you might apply a log-transformation to the x- and/or y-axis. Or you can also change the color palette that is used for the color of points in scatterplot. If a scale uses a legend, you can adjust its appearance, change the title or its position, among other things:
+
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+ggplot(airquality) +
+    geom_point(aes(x = Temp, y = Ozone, color = as.ordered(Month))) +
+    scale_color_brewer(palette = 'Spectral', guide = guide_legend(title = 'Month'))
+```
+
+## Facets
+
+*Facets* allow you to create small multiples of your plots. Instead of projecting all data points into a single plot, split them into groups depending on a variable and then create a small plot for each group. You can use `facet_wrap()` to do this and specify the variable for splitting as "R formula", e.g. `~ X` where `X` is the variable to split by:
+
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+ggplot(airquality) +
+    geom_point(aes(x = Temp, y = Ozone)) +
+    facet_wrap(~ as.ordered(Month))   # make a plot for each month. convert to ordered factor before
+```
+
+You can specify more options in `facet_wrap()`, e.g. restrict the number of rows or columns.
+
+```{r, message=FALSE, warning=FALSE, fig.width=8, fig.height=2.5}
+ggplot(airquality) +
+    geom_point(aes(x = Temp, y = Ozone)) +
+    facet_wrap(~ as.ordered(Month), nrow = 1)
+```
+
+By default, all plots share the same scales on the axes which ensures better comparability. However, you can change that using the `scales` argument. 
+
+
+## Common mistakes
+
+A very common mistake is to accidentally put `+` on a new line:
+
+```{r, eval=FALSE}
+ggplot(airquality, aes(x = Temp, y = Ozone))
+  + geom_point()
+```
+
+`Error: Cannot use "+.gg()" with a single argument. Did you accidentally put + on a new line?`
+
+The `+` operator must appear before the line break (the same is true for other operators like `%>%` used in *dplyr*):
+
+```{r, eval=FALSE}
+ggplot(airquality, aes(x = Temp, y = Ozone)) +
+  geom_point()
+```
+
+
+The type of your variables determines its scale for plotting. E.g. here you might want to use a discrete scale:
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+ggplot(airquality, aes(x = Temp, y = Ozone, color = Month)) +
+  geom_point()
+```
+
+
+Converting the numerical to a factor tells ggplot that a discrete scale is appropriate:
+
+```{r, message=FALSE, warning=FALSE, fig.height=4}
+ggplot(airquality, aes(x = Temp, y = Ozone, color = as.factor(Month))) +
+  geom_point()
+```
 
 # Data linkage with *dplyr*
 
@@ -126,7 +250,33 @@ We will learn more options on how to specify display windows in the second part 
 
 ## Exercise 3
 
+### Loading and filtering the worldmap dataset
 
+See hints in exercise 2.
+
+### Grouping and counting
+
+You can use the function `group_by()` from the package `dplyr` to group the dataset and then pass the groups to the function `count()` to count observations in each group. For example, if you want to group the dataset `msleep` by variable `vore` and count the observations in each group, you can do so as follows:
+
+```{r, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)  # for the "msleep" example dataset
+
+group_by(msleep, vore) %>% count()
+```
+
+You can also group by several variables, for example by each combination of the variables `vore` and `order` that exist in the dataset:
+
+```{r}
+group_by(msleep, vore, order) %>% count() %>%  # group and count by variables "vore" and "order"
+    ungroup() %>% sample_n(5)                  # show only a sample of 5 rows
+```
+
+For the given task, you must group the observations by city **and** city longitude/latitude.
+
+### Restricting the display window
+
+See hints in exercise 2.
 
 ## Exercise 4
 
@@ -171,8 +321,8 @@ The following packages come directly with geo-data or provide means to download 
 
 - [maps](https://cran.r-project.org/web/packages/maps/index.html): World, USA, US states, US counties and more
 - [mapdata](https://cran.r-project.org/web/packages/mapdata/index.html): World in higher resolution, China, Japan and more
-- [rnaturalearth](https://cran.r-project.org/web/packages/rnaturalearth/index.html): *R package to hold and facilitate interaction with natural earth vector map data.* → see next slides
-- [OpenStreetMap](https://cran.r-project.org/web/packages/OpenStreetMap/): Access to the OpenStreetMap API → see next slides
+- [rnaturalearth](https://cran.r-project.org/web/packages/rnaturalearth/index.html): *R package to hold and facilitate interaction with natural earth vector map data.* → see next section
+- [OpenStreetMap](https://cran.r-project.org/web/packages/OpenStreetMap/): Access to the OpenStreetMap API → see next section
 
 
 ## Natural Earth Data

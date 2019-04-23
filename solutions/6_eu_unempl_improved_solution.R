@@ -8,6 +8,7 @@ library(dplyr)
 library(sf)
 
 # load unemployment data at NUTS level-2
+# make sure that your working directory is set to where this file resides
 unempl <- read.csv('tgs00010_unempl_nuts2.csv', stringsAsFactors = FALSE)
 
 # check the maximum unemployment rate to decide on a proper way to make discrete bins
@@ -26,6 +27,7 @@ unempl2016 <- unempl[unempl$year == 2016,] %>% select(-year)
 head(unempl2016)
 
 # load the NUTS regions spatial dataset at level 2 from year 2016
+# make sure that your working directory is set to where this file resides
 nutsrg <- read_sf('nutsrg_2_2016_epsg3857_20M.json')
 st_crs(nutsrg) <- 3857  # set the proper CRS
 

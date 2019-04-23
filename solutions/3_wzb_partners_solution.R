@@ -8,6 +8,7 @@ library(maps)
 library(sf)
 
 # load WZB partners data
+# make sure that your working directory is set to where this file resides
 partners <- read.csv('wzb_partners_data.csv', stringsAsFactors = FALSE)
 
 # worldmap data

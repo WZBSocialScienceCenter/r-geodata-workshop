@@ -178,7 +178,7 @@ You combine all these steps with a `+`.
 - load `ggplot2` and inform yourself about the `msleep` dataset
 - make a scatterplot with `bodywt` on x-axis, `sleep_total` on y-axis
 - improve the plot by:
-    - transforming the x scale to log10 `scale_x_log10()`
+    - transforming the x scale to log10 using `scale_x_log10()`
     - making the dot color dependent on `vore`
 
 # Hello world: Plotting points on a world map
