@@ -37,9 +37,9 @@ set.seed(10042019)
 - working at WZB as Data Scientist in IT dept. since April 2016
 - my job: doing everything that requires non-trivial programming
     - data extraction and preparation (e.g. data retrieval from APIs, web scraping, data extraction from PDFs)
-    - quantitive text analysis
+    - quantitive text analysis (Topic modeling)
     - interactive and static visualizations
-    - implementing experiments
+    - implementing experiments (esp. w/ oTree)
     - designing and implementing research databases
     - apparently giving workshops
 
@@ -345,7 +345,7 @@ ggplot(some_cities) +                                  # pass the cities data to
     - your dataset should have three columns: longitude, latitude, label
 - plot the points on a world map and add labels to them
 - if your points are too near to each other on a global scale:
-    - consider filtering the "worldmap" dataset to contain only the country you need to plotting
+    - consider filtering the "worldmap" dataset to contain only the country you need for plotting
     - or: restrict the display window (see hints in handout)
 
 **3. Visualizing WZB partner institutions on a world map**
@@ -571,10 +571,6 @@ ggplot() + geom_sf(aes(fill = contains_wzb), data = bln_plan) +
           axis.ticks = element_blank())
 ```
 
-<!--
-<small>¹ we will have a look at geo-coding later</small>
-<small>² make sure that both use the same coordinate reference system -- see last unit in this workshop</small>
--->
 
 ## Sources for geo-data
 
