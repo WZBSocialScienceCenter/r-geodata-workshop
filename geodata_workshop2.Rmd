@@ -363,7 +363,7 @@ ggplot() + geom_sf(aes(fill = risk_pct_bins), data = pov_risk_10_to_16_geo, size
 
 ## Getting access {.smaller .build}
 
-The [Google Maps API](https://cloud.google.com/maps-platform/) is a web service that allows programmatic geocoding or reverse geocoding (among other things). But simply, this means:
+The [Google Maps API](https://cloud.google.com/maps-platform/) is a web service that allows programmatic geocoding or reverse geocoding (among other things). Put simply, this means:
 
 - you send a list of queries (e.g. addresses) to a Google server
 - the server responds with a list of geo-coordinates
@@ -390,9 +390,8 @@ register_google(key = google_cloud_api_key)
 
 places <- c('Berlin', 'Leipzig', '10317, Deutschland',
             'Reichpietschufer 50, 10785 Berlin')
-# TODO: uncomment again
-#place_coords <- geocode(places) %>% mutate(place = places)
-#place_coords
+place_coords <- geocode(places) %>% mutate(place = places)
+place_coords
 ```
 
 
@@ -402,8 +401,7 @@ Take the WZB's geo-coordinates and see if we can find the address to it:
 
 ```{r, message=FALSE}
 # first longitude, then latitude
-# TODO: uncomment again
-#revgeocode(c(13.36509, 52.50640))
+revgeocode(c(13.36509, 52.50640))
 ```
 
 Social media posts or digital photos often contain geo-coordinates that you may want to "reverse geocode".
@@ -658,7 +656,7 @@ We can also use the whole dataset, but set limits on the display window via `coo
 - `xlim` are the bounds for the x-axis 
 - `ylim` are the bounds for the y-axis
 
-Using the default Mercator projection (not appropriate for this region):
+Using the default Mercator-like projection (not appropriate for this region):
 
 ```{r, fig.height=3, fig.align='center'}
 ggplot() + geom_sf(data = worldmap) +

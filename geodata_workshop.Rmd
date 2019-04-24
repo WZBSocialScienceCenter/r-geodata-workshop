@@ -35,7 +35,7 @@ set.seed(10042019)
 ## About me {.build}
 
 - working at WZB as Data Scientist in IT dept. since April 2016
-- my job: doing everything that requires non-trivial programming
+- my job:
     - data extraction and preparation (e.g. data retrieval from APIs, web scraping, data extraction from PDFs)
     - quantitive text analysis (Topic modeling)
     - interactive and static visualizations
@@ -58,7 +58,7 @@ Why use R for that?
 - but: R gives you several advantages over these tools
     - it's for free
     - offers full flexibility
-    - also supports geo-spatial analysis (distances, clustering, regional densities, etc.)
+    - also supports geo-spatial analysis
     - no need to switch tools
 
 
@@ -173,7 +173,7 @@ You combine all these steps with a `+`.
 
 ## Exercise 1
 
-**1. For those new to ggplot: Making a scatterplot**
+**1. Making a scatterplot (for those new to ggplot)**
 
 - load `ggplot2` and inform yourself about the `msleep` dataset
 - make a scatterplot with `bodywt` on x-axis, `sleep_total` on y-axis
