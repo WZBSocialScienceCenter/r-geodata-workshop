@@ -121,6 +121,7 @@ In a *choropleth map*, regions are shaded according to the measurement of some v
   <small>source: [United Nations, "Water for life action"](https://www.un.org/waterforlifedecade/scarcity.shtml)</small>
 </div>
 
+The above picture is a good example of a bad color scheme.
 
 ## Making a choropleth map {.smaller .build}
 
@@ -166,7 +167,7 @@ bln_sozind$child_pov_bins <- cut(bln_sozind$STATUS4, seq(0, 100, by = 20))
 ggplot() + geom_sf(aes(fill = child_pov_bins), data = bln_sozind) +
     scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
                       guide = guide_legend(title = 'Child pov.\nranges in pct.')) +
-    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
+    coord_sf(datum = NA) +  # disable lines ("graticule") in the background
     theme_void()
 ```
 
@@ -209,14 +210,13 @@ head(pov_risk_2016_geo)
 ```{r, warning=FALSE, message=FALSE, fig.height=3.5, fig.align='center'}
 (eu_pov_plt <- ggplot() + geom_sf(aes(fill = risk_pct_bins),
                                   data = pov_risk_2016_geo, size = 0.1) +
-    scale_fill_brewer(palette = 'OrRd', na.value = "grey90",
-                      guide = guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
-    labs(title = 'Poverty in the EU 2016',
-         subtitle = 'Percentage of people at risk of poverty or social exclusion',
-         caption = 'source: Eurostat') +
-    coord_sf(datum = NA) +  # disable lines ("graticules") in the background
-    theme_bw() + theme(axis.text = element_blank(), axis.title = element_blank(),
-                       axis.ticks = element_blank()))
+  scale_fill_brewer(palette = 'OrRd', na.value = "grey90", guide =
+                        guide_legend(title = 'Pct. of people at\nrisk of poverty')) +
+  labs(title = 'Poverty in the EU 2016',
+       subtitle = 'Percentage of people at risk of poverty or social exclusion',
+       caption = 'source: Eurostat') +
+  coord_sf(datum = NA) +  # disable lines ("graticule") in the background
+  theme_void())
 ```
 
 ## Plotting the combined data
@@ -501,7 +501,7 @@ There are numerous projections, each with different properties and trade-offs be
 
 - spatial datasets usually specify the CRS &rarr; you should be able to set or transform it<br><br>
 - you may want to use a different projection, because:
-    - a different projection gives less distortion in the area of your interest (many historical projections a Euro-centric)
+    - a different projection gives less distortion in the area of your interest (many historical projections are Euro-centric)
     - inequal area projections give too much visual weight on certain regions (i.e. Northern and Southern regions in Mercator projection)<br><br>
 - compatibility between datasets matters (e.g. country shapes in specific CRS, but geo-coded points as WGS84 coordinates)
 
@@ -584,7 +584,7 @@ st_crs(bln_plan) <- 25833
 
 ## Setting a CRS {.smaller .build}
 
-Note that by default, ggplot displays lines ("graticules") and axes according to WGS84 coordinates, although the actual data uses a different CRS:
+Note that by default, ggplot displays lines ("graticule") and axes according to WGS84 coordinates, although the actual data uses a different CRS:
 
 ```{r, fig.height=4, fig.align='center'}
 ggplot() + geom_sf(data = bln_plan)
@@ -656,7 +656,7 @@ We can also use the whole dataset, but set limits on the display window via `coo
 - `xlim` are the bounds for the x-axis 
 - `ylim` are the bounds for the y-axis
 
-Using the default Mercator-like projection (not appropriate for this region):
+Using the default Mercator-like projection:
 
 ```{r, fig.height=3, fig.align='center'}
 ggplot() + geom_sf(data = worldmap) +

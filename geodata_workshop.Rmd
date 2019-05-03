@@ -258,7 +258,7 @@ Examples:
 - population: 8.6 mio.
 </div>
 <div style="width:50%; float:left;">
-- geometry: polygons with of points at ...
+- geometry: polygons with points at ...
 - name: Italy
 - most popular meal: pizza
 </div>
@@ -420,7 +420,7 @@ labelsdf <- data.frame(label = sprintf('%s (%s)\nISO Codes: %s / %s',
 labels_coords <- as.data.frame(st_coordinates(st_centroid(world$geometry)))
 labelsdf$x <- labels_coords$X
 labelsdf$y <- labels_coords$Y
-world$show_label <- sample(c(TRUE, FALSE), nrow(labelsdf), replace = TRUE, prob = c(0.2, 0.8))
+world$show_label <- sample(c(TRUE, FALSE), nrow(labelsdf), replace = TRUE, prob = c(0.15, 0.85)) & !is.na(world$iso_a2)
 labelsdf <- labelsdf[world$show_label, ]
 
 ggplot() + geom_sf(aes(fill = show_label), data = world) +

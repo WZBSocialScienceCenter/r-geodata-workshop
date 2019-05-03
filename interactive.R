@@ -31,6 +31,11 @@ random_dots <- data.frame(x = sample(sampled_pres$year, 10),
 library(sf)
 library(maps)
 
+# not for ggplot2:
+map('world')
+map('world', plot = FALSE, fill = TRUE)
+
+# turn into "sf" object:
 worldmap_data <- st_as_sf(map('world', plot = FALSE, fill = TRUE))
 worldmap_data
 
@@ -61,6 +66,8 @@ bln_sozind <- read_sf('data/bln_plr_sozind.geojson')
 
 #### Combining data: Poverty risk data ####
 
+library(dplyr)
+
 pov_risk <- read.csv('data/tgs00107_pov_risk_nuts2.csv',
                      stringsAsFactors = FALSE)
 pov_risk$risk_pct_bins <- cut(pov_risk$risk_pct, seq(0, 100, by = 10))
@@ -71,6 +78,8 @@ pov_risk_2016
 
 #### Combining data: NUTS level-2 regions ####
 
+library(sf)
+
 nutsrg2 <- read_sf('data/nutsrg_2.json')
 st_crs(nutsrg2) <- 3857  # set the correct CRS
 
@@ -79,6 +88,7 @@ nutsrg2
 
 #### Using *ggmap* for geocoding ####
 
+library(dplyr)
 library(ggmap)
 
 source('apikeys.R')
@@ -109,6 +119,9 @@ worldmap_data
 bln_plan <- read_sf('data/Planungsraum_EPSG_25833.shp')
 bln_plan
 
+#### Transforming the CRS ####
+
+wzb_coord <- data.frame(lng = 13.365097, lat = 52.506459)
 
 #### Setting the display window ####
 
