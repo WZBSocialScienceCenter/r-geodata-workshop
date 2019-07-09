@@ -1,0 +1,4 @@
+*.html linguist-generated=true
+*.docx linguist-generated=true
+*.pdf linguist-generated=true
+
